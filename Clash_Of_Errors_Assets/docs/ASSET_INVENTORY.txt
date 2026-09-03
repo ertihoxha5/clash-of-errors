@@ -1,0 +1,11 @@
+Clash_Of_Errors_Assets/docs/Clash_Of_Errors_Codex_Prompt.md
+Clash_Of_Errors_Assets/docs/Clash_Of_Errors_Codex_Prompt.pdf
+Clash_Of_Errors_Assets/docs/Clash_Of_Errors_Codex_Prompt.txt
+Clash_Of_Errors_Assets/icons/ui_icon_sheet.png
+Clash_Of_Errors_Assets/logos/clash_of_errors_logo_main.png
+Clash_Of_Errors_Assets/logos/clash_of_errors_logo_mark.png
+Clash_Of_Errors_Assets/mockups/01_landing_page.png
+Clash_Of_Errors_Assets/mockups/02_join_create_arena.png
+Clash_Of_Errors_Assets/mockups/03_host_lobby.png
+Clash_Of_Errors_Assets/mockups/04_live_battle.png
+Clash_Of_Errors_Assets/mockups/05_results_ai_report.png
