@@ -31,14 +31,17 @@ test("includes foundational accessibility hooks",async()=>{
 });
 
 test("implements server-protected identity and profile persistence",async()=>{
- const [login,profile,api,schema]=await Promise.all([
+ const [login,profile,dashboard,api,schema]=await Promise.all([
   readFile(new URL("../app/login/page.tsx",import.meta.url),"utf8"),
   readFile(new URL("../app/profile/page.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../app/dashboard/page.tsx",import.meta.url),"utf8"),
   readFile(new URL("../app/api/profile/route.ts",import.meta.url),"utf8"),
   readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),
  ]);
  assert.match(login,/chatGPTSignInPath\("\/profile"\)/);
  assert.match(profile,/requireChatGPTUser\("\/profile"\)/);
+ assert.match(dashboard,/requireChatGPTUser\("\/dashboard"\)/);
+ assert.match(dashboard,/ENTER THE ARENA/);
  assert.match(api,/getChatGPTUser\(\)/);
  assert.match(api,/Authentication required/);
  assert.match(schema,/sqliteTable\("users"/);

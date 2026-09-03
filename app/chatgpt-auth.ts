@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -6,6 +7,19 @@ export type ChatGPTUser = {
   displayName: string;
   email: string;
   fullName: string | null;
+};
+
+// Local-development shim. Dispatch (the OpenAI Sites platform) owns the real
+// sign-in flow — the `/signin-with-chatgpt` route and the identity headers only
+// exist once deployed. Without this, every protected page 404s under
+// `vinext dev`/`start`. `import.meta.env.DEV` is statically `false` in
+// production builds, so this branch is dropped from the deployed bundle.
+const DEV_AUTH = import.meta.env.DEV;
+const DEV_USER: ChatGPTUser = {
+  userId: "local-dev-user",
+  displayName: "Local Dev",
+  email: "dev@clash-of-errors.local",
+  fullName: "Local Dev",
 };
 
 const USER_ID_HEADER = "oai-authenticated-user-id";
@@ -22,7 +36,7 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);
-  if (!userId || !email) return null;
+  if (!userId || !email) return DEV_AUTH ? DEV_USER : null;
 
   const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
   const fullName =
@@ -50,11 +64,14 @@ export async function requireChatGPTUser(
 
 export function chatGPTSignInPath(returnTo: string): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
+  // No Dispatch locally — send the browser straight to the destination.
+  if (DEV_AUTH) return safeReturnTo;
   return `${SIGN_IN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
 export function chatGPTSignOutPath(returnTo = "/"): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
+  if (DEV_AUTH) return safeReturnTo;
   return `${SIGN_OUT_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
