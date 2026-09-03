@@ -71,6 +71,22 @@ export const topicMastery=sqliteTable("topic_mastery",{
  userId:text("user_id").notNull().references(()=>users.id),topicId:integer("topic_id").notNull().references(()=>topics.id),attempts:integer("attempts").notNull().default(0),correct:integer("correct").notNull().default(0),mastery:integer("mastery").notNull().default(0),updatedAt:text("updated_at").notNull(),
 },table=>[uniqueIndex("idx_topic_mastery_user_topic").on(table.userId,table.topicId)]);
 
+export const botBattles=sqliteTable("bot_battles",{
+ id:text("id").primaryKey(),userId:text("user_id").notNull().references(()=>users.id),topicId:integer("topic_id").notNull().references(()=>topics.id),difficulty:text("difficulty").notNull(),questionCount:integer("question_count").notNull(),status:text("status").notNull().default("active"),userScore:integer("user_score").notNull().default(0),userCorrect:integer("user_correct").notNull().default(0),xpEarned:integer("xp_earned").notNull().default(0),startedAt:text("started_at").notNull(),completedAt:text("completed_at"),
+},table=>[index("idx_bot_battles_user_started").on(table.userId,table.startedAt)]);
+
+export const botParticipants=sqliteTable("bot_participants",{
+ id:integer("id").primaryKey({autoIncrement:true}),battleId:text("battle_id").notNull().references(()=>botBattles.id,{onDelete:"cascade"}),persona:text("persona").notNull(),tier:text("tier").notNull(),accuracy:integer("accuracy").notNull(),minResponseMs:integer("min_response_ms").notNull(),maxResponseMs:integer("max_response_ms").notNull(),score:integer("score").notNull().default(0),correct:integer("correct").notNull().default(0),
+},table=>[index("idx_bot_participants_battle").on(table.battleId)]);
+
+export const botBattleAnswers=sqliteTable("bot_battle_answers",{
+ id:integer("id").primaryKey({autoIncrement:true}),battleId:text("battle_id").notNull().references(()=>botBattles.id,{onDelete:"cascade"}),questionId:integer("question_id").notNull().references(()=>questions.id),selectedOptionId:integer("selected_option_id").notNull().references(()=>questionOptions.id),isCorrect:integer("is_correct",{mode:"boolean"}).notNull(),responseMs:integer("response_ms").notNull(),points:integer("points").notNull(),answeredAt:text("answered_at").notNull(),
+},table=>[uniqueIndex("idx_bot_answers_battle_question").on(table.battleId,table.questionId)]);
+
+export const botSimulatedAnswers=sqliteTable("bot_simulated_answers",{
+ id:integer("id").primaryKey({autoIncrement:true}),participantId:integer("participant_id").notNull().references(()=>botParticipants.id,{onDelete:"cascade"}),questionId:integer("question_id").notNull().references(()=>questions.id),isCorrect:integer("is_correct",{mode:"boolean"}).notNull(),responseMs:integer("response_ms").notNull(),points:integer("points").notNull(),
+},table=>[uniqueIndex("idx_bot_sim_answers_participant_question").on(table.participantId,table.questionId)]);
+
 export const profiles=sqliteTable("profiles",{
  userId:text("user_id").primaryKey().references(()=>users.id,{onDelete:"cascade"}),
  displayName:text("display_name").notNull(),
