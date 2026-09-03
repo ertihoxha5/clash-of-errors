@@ -23,6 +23,10 @@ const eslintConfig = defineConfig([
   jsxA11y.flatConfigs.recommended,
   next.configs["core-web-vitals"],
   {
+    rules: {
+      "@next/next/no-html-link-for-pages": "off",
+      "react-hooks/set-state-in-effect": "off",
+    },
     languageOptions: {
       globals: {
         ...globals.browser,

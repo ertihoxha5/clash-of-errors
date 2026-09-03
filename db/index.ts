@@ -43,7 +43,8 @@ function ensureLocalSchema(d1: D1Database): Promise<void> {
 }
 
 export async function getDb() {
-  if (!env.DB) throw new Error(MISSING_DB);
-  if (import.meta.env.DEV) await ensureLocalSchema(env.DB);
-  return drizzle(env.DB, { schema });
+  const runtimeEnv = env as typeof env & { DB?: D1Database };
+  if (!runtimeEnv.DB) throw new Error(MISSING_DB);
+  if (import.meta.env.DEV) await ensureLocalSchema(runtimeEnv.DB);
+  return drizzle(runtimeEnv.DB, { schema });
 }
