@@ -79,3 +79,11 @@ test("implements variable persistent bot battles with versioned scoring",async()
  for(const table of ["bot_battles","bot_participants","bot_battle_answers","bot_simulated_answers"])assert.match(schema,new RegExp(`sqliteTable\\("${table}"`));
  assert.match(create,/Math\.min\(5/);assert.match(create,/accuracy/);assert.match(battle,/Math\.random/);assert.match(battle,/Question already answered/);assert.match(scoring,/SCORING_VERSION/);assert.match(scoring,/speed/);assert.match(runner,/LIVE STANDINGS/);assert.match(results,/podium/);assert.match(migration,/idx_bot_answers_battle_question/);
 });
+
+test("implements persistent multiplayer lobbies with presence and host controls",async()=>{
+ const [schema,arenaApi,roomApi,setup,lobby,migration]=await Promise.all([
+  readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),readFile(new URL("../app/api/arena/route.ts",import.meta.url),"utf8"),readFile(new URL("../app/api/room/[code]/route.ts",import.meta.url),"utf8"),readFile(new URL("../app/arena/ArenaSetup.tsx",import.meta.url),"utf8"),readFile(new URL("../app/room/[code]/Lobby.tsx",import.meta.url),"utf8"),readFile(new URL("../drizzle/0005_robust_sue_storm.sql",import.meta.url),"utf8")
+ ]);
+ for(const table of ["arenas","arena_participants"])assert.match(schema,new RegExp(`sqliteTable\\("${table}"`));
+ assert.match(arenaApi,/export async function POST/);assert.match(arenaApi,/Arena is full/);assert.match(roomApi,/lastSeenAt/);assert.match(roomApi,/Only the host can start/);assert.match(roomApi,/isHost:true/);assert.match(setup,/JOIN ARENA/);assert.match(lobby,/ROOM CODE/);assert.match(lobby,/Start battle/);assert.match(migration,/idx_arena_participants_presence/);
+});

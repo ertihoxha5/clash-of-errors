@@ -87,6 +87,14 @@ export const botSimulatedAnswers=sqliteTable("bot_simulated_answers",{
  id:integer("id").primaryKey({autoIncrement:true}),participantId:integer("participant_id").notNull().references(()=>botParticipants.id,{onDelete:"cascade"}),questionId:integer("question_id").notNull().references(()=>questions.id),isCorrect:integer("is_correct",{mode:"boolean"}).notNull(),responseMs:integer("response_ms").notNull(),points:integer("points").notNull(),
 },table=>[uniqueIndex("idx_bot_sim_answers_participant_question").on(table.participantId,table.questionId)]);
 
+export const arenas=sqliteTable("arenas",{
+ id:text("id").primaryKey(),code:text("code").notNull().unique(),hostId:text("host_id").notNull().references(()=>users.id),title:text("title").notNull(),topicId:integer("topic_id").notNull().references(()=>topics.id),difficulty:text("difficulty").notNull(),questionCount:integer("question_count").notNull(),timeLimit:integer("time_limit").notNull(),visibility:text("visibility").notNull().default("private"),maxParticipants:integer("max_participants").notNull().default(8),status:text("status").notNull().default("lobby"),createdAt:text("created_at").notNull(),updatedAt:text("updated_at").notNull(),
+},table=>[index("idx_arenas_status_created").on(table.status,table.createdAt)]);
+
+export const arenaParticipants=sqliteTable("arena_participants",{
+ id:integer("id").primaryKey({autoIncrement:true}),arenaId:text("arena_id").notNull().references(()=>arenas.id,{onDelete:"cascade"}),userId:text("user_id").notNull().references(()=>users.id),displayName:text("display_name").notNull(),avatar:text("avatar").notNull(),isHost:integer("is_host",{mode:"boolean"}).notNull().default(false),isReady:integer("is_ready",{mode:"boolean"}).notNull().default(false),status:text("status").notNull().default("online"),joinedAt:text("joined_at").notNull(),lastSeenAt:text("last_seen_at").notNull(),
+},table=>[uniqueIndex("idx_arena_participants_arena_user").on(table.arenaId,table.userId),index("idx_arena_participants_presence").on(table.arenaId,table.lastSeenAt)]);
+
 export const profiles=sqliteTable("profiles",{
  userId:text("user_id").primaryKey().references(()=>users.id,{onDelete:"cascade"}),
  displayName:text("display_name").notNull(),
