@@ -16,11 +16,16 @@ test("server-renders the Clash of Errors foundation",async()=>{
  const html=await response.text();
  assert.match(html,/<title>Clash of Errors/);
  assert.match(html,/a Coding Arena\./);
- assert.match(html,/How It Works/);
- assert.match(html,/1v1 Duel/);
- assert.match(html,/Squad Clash/);
- assert.match(html,/Survival/);
- assert.match(html,/AI Coaching/);
+ assert.match(html,/How it works/);
+ assert.match(html,/Three hundred lines/);
+ assert.match(html,/Six fields, one bank/);
+ assert.match(html,/Bug Hunter/);
+ // Each battle-mode card links somewhere real rather than popping a milestone toast.
+ assert.match(html,/href="[/]challenges"/);
+ assert.match(html,/href="[/]play"/);
+ assert.match(html,/href="[/]register"/);
+ assert.doesNotMatch(html,/ChatGPT|Milestone 3|Milestone 4/);
+ assert.match(html,/Pick who you race/);
  assert.doesNotMatch(html,/codex-preview|SkeletonPreview|react-loading-skeleton/);
 });
 
@@ -35,15 +40,15 @@ test("implements server-protected identity and profile persistence",async()=>{
   readFile(new URL("../app/login/page.tsx",import.meta.url),"utf8"),
   readFile(new URL("../app/profile/page.tsx",import.meta.url),"utf8"),
   readFile(new URL("../app/dashboard/page.tsx",import.meta.url),"utf8"),
-  readFile(new URL("../app/api/profile/route.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/api/account/route.ts",import.meta.url),"utf8"),
   readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),
  ]);
- assert.match(login,/chatGPTSignInPath\("\/profile"\)/);
- assert.match(profile,/requireChatGPTUser\("\/profile"\)/);
- assert.match(dashboard,/requireChatGPTUser\("\/dashboard"\)/);
+ assert.match(login,/AccountForm/);assert.match(login,/safeReturnPath/);
+ assert.match(profile,/requirePlayer\("\/profile"\)/);
+ assert.match(dashboard,/requirePlayer\("\/dashboard"\)/);
  assert.match(dashboard,/ENTER THE ARENA/);
- assert.match(api,/getChatGPTUser\(\)/);
- assert.match(api,/Authentication required/);
+ assert.match(api,/getPlayer\(\)/);
+ assert.match(api,/That username and password do not match/);
  assert.match(schema,/sqliteTable\("users"/);
  assert.match(schema,/sqliteTable\("profiles"/);
 });
@@ -60,7 +65,7 @@ test("includes the persistent question bank and protected instructor CRUD",async
  assert.match(collection,/export async function POST/);
  assert.match(item,/export async function PATCH/);
  assert.match(item,/export async function DELETE/);
- assert.match(page,/requireChatGPTUser\("\/instructor\/questions"\)/);
+ assert.match(page,/requirePlayer\("\/instructor\/questions"\)/);
  assert.match(migration,/INSERT INTO `questions`/);
 });
 
@@ -69,7 +74,7 @@ test("implements persistent server-validated solo practice",async()=>{
   readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),readFile(new URL("../app/api/practice/route.ts",import.meta.url),"utf8"),readFile(new URL("../app/api/practice/session/[id]/route.ts",import.meta.url),"utf8"),readFile(new URL("../app/practice/page.tsx",import.meta.url),"utf8"),readFile(new URL("../app/practice/session/[id]/PracticeRunner.tsx",import.meta.url),"utf8"),readFile(new URL("../app/practice/results/[id]/page.tsx",import.meta.url),"utf8"),readFile(new URL("../drizzle/0003_tired_korvac.sql",import.meta.url),"utf8")
  ]);
  for(const table of ["practice_sessions","practice_answers","topic_mastery"])assert.match(schema,new RegExp(`sqliteTable\\("${table}"`));
- assert.match(start,/crypto\.randomUUID/);assert.match(session,/Question already answered/);assert.match(session,/correctOptionId/);assert.match(setup,/requireChatGPTUser\("\/practice"\)/);assert.match(runner,/Lock answer/);assert.match(results,/XP earned/);assert.match(migration,/idx_practice_answers_session_question/);
+ assert.match(start,/crypto\.randomUUID/);assert.match(session,/Question already answered/);assert.match(session,/correctOptionId/);assert.match(setup,/requirePlayer\("\/practice"\)/);assert.match(runner,/Lock answer/);assert.match(results,/XP earned/);assert.match(migration,/idx_practice_answers_session_question/);
 });
 
 test("implements variable persistent bot battles with versioned scoring",async()=>{
@@ -95,3 +100,143 @@ test("implements a server-authoritative persistent multiplayer battle engine",as
  for(const table of ["arena_battle_questions","arena_answers"])assert.ok(schema.includes(`sqliteTable("${table}"`));
  assert.match(lobbyApi,/SCORING_VERSION/);assert.match(lobbyApi,/status:"active"/);assert.match(battleApi,/Date\.parse\(startedAt\)/);assert.match(battleApi,/Submission window closed/);assert.match(battleApi,/Question already answered/);assert.match(battleApi,/status:"completed"/);assert.match(battleApi,/scoreAnswer/);assert.match(scoring,/streakBonus/);assert.match(battleUi,/LIVE LEADERBOARD/);assert.match(battleUi,/FINAL/);assert.match(migration,/idx_arena_answers_participant_question/);
 });
+
+test("seeds a published question bank deep enough for battles",async()=>{
+ const seed=await readFile(new URL("../drizzle/0008_seed_content.sql",import.meta.url),"utf8");
+ const buckets=new Map(),options=new Map();
+ for(const line of seed.split("--> statement-breakpoint")){
+  const question=line.match(/INSERT OR IGNORE INTO questions \((\d+)?[^)]*\) SELECT (\d+),id,[\s\S]*'(easy|medium|hard)','published'[\s\S]*FROM topics WHERE slug='([a-z-]+)'/);
+  if(question){buckets.set(`${question[4]}/${question[3]}`,(buckets.get(`${question[4]}/${question[3]}`)||0)+1);continue}
+  const option=line.match(/INSERT OR IGNORE INTO question_options \(id,question_id,label,is_correct,position\) VALUES \(\d+,(\d+),[\s\S]*,([01]),\d\)/);
+  if(option){const entry=options.get(option[1])||{total:0,correct:0};entry.total+=1;entry.correct+=Number(option[2]);options.set(option[1],entry)}
+ }
+ assert.equal(buckets.size,12);
+ // Bot battles request five questions of one topic and difficulty; live arenas request more.
+ for(const [bucket,count] of buckets)assert.ok(count>=6,`${bucket} has only ${count} questions`);
+ for(const [questionId,entry] of options)assert.deepEqual(entry,{total:4,correct:1},`question ${questionId} is not single-answer`);
+ assert.match(seed,/INSERT OR IGNORE INTO topics \(slug,name,description\)/);
+});
+
+test("pays capped, idempotent XP for arcade runs and completed arenas",async()=>{
+ const [game,battle,arcade,platform]=await Promise.all([
+  readFile(new URL("../app/api/game/route.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/api/battle/[code]/route.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/play/BugHunter.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../lib/platform.ts",import.meta.url),"utf8"),
+ ]);
+ assert.match(game,/MILESTONES/);assert.match(game,/rewardStatements/);assert.match(game,/game:\$\{day\}/);
+ assert.match(battle,/awardBattleXp/);assert.match(battle,/arena:\$\{arenaId\}/);
+ assert.match(platform,/INSERT OR IGNORE INTO platform_rewards/);assert.match(platform,/changes\(\)=1/);
+ assert.match(arcade,/requestAnimationFrame/);assert.match(arcade,/NullPointer/);assert.match(arcade,/StackOverflow/);
+ assert.match(arcade,/\/api\/game/);
+});
+
+test("challenges are code tasks: find the bug, or write it until the tests pass",async()=>{
+ const [schema,api,tasks,ui,snippet,sandbox,content]=await Promise.all([
+  readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/api/tasks/route.ts",import.meta.url),"utf8"),
+  readFile(new URL("../lib/code-tasks.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/challenges/Challenges.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../app/components/BugSnippet.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../lib/sandbox.ts",import.meta.url),"utf8"),
+  readFile(new URL("../drizzle/0010_code_task_content.sql",import.meta.url),"utf8"),
+ ]);
+ for(const table of ["code_tasks","code_attempts"])assert.match(schema,new RegExp(`sqliteTable\\("${table}"`));
+ // The graded answer never ships to the browser.
+ assert.match(tasks,/fixes:fixes\.map\(f=>f\.label\)/);
+ assert.doesNotMatch(tasks,/buggyLine:row\.buggyLine[,}]/);
+ assert.match(tasks,/export function checkBugAnswer/);
+ assert.match(api,/checkBugAnswer/);
+ assert.match(api,/testsPassed===testsTotal/);
+ assert.match(api,/rewardStatements/);
+ assert.match(ui,/FIND THE BUG/);assert.match(ui,/WRITE THE CODE/);
+ assert.match(snippet,/aria-pressed/);
+ assert.match(sandbox,/new Worker/);assert.match(sandbox,/terminate/);
+ const kinds=[...content.matchAll(/,'(bug|write)','/g)].map(match=>match[1]);
+ assert.ok(kinds.filter(kind=>kind==="bug").length>=20,`only ${kinds.filter(k=>k==="bug").length} bug tasks`);
+ assert.ok(kinds.filter(kind=>kind==="write").length>=10,`only ${kinds.filter(k=>k==="write").length} write tasks`);
+});
+
+test("duels race a player against a scheduled NPC rival",async()=>{
+ const [schema,create,room,ui,npcs,chooser]=await Promise.all([
+  readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/api/duel/route.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/api/duel/[code]/route.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/duel/[code]/DuelArena.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../lib/npcs.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/battles/ChooseRival.tsx",import.meta.url),"utf8"),
+ ]);
+ assert.match(schema,/sqliteTable\("duels"/);
+ // The rival's whole run is decided when the room opens, not while it is polled.
+ assert.match(create,/npcSchedule\(npc,testsTotal,timeLimit\)/);
+ assert.match(npcs,/export function npcSchedule/);
+ assert.match(room,/Math\.max\(ctx\.duel\.userTestsPassed,reported\)/);
+ assert.match(room,/eq\(duels\.status,"active"\)/);
+ assert.match(room,/duel:\${duel\.id}/);
+ for(const piece of [/Room code/,/LIVE LEADERBOARD|Live leaderboard/,/TESTS PASSED/,/VS/])assert.match(ui,piece);
+ assert.match(chooser,/Choose your rival/);
+ assert.ok(/CodeNinja/.test(npcs)&&/SyntaxStorm/.test(npcs),"the NPC roster is missing its rivals");
+});
+
+test("accounts are local: name, surname, username, password",async()=>{
+ const [auth,api,form,screen,schema,shell]=await Promise.all([
+  readFile(new URL("../app/auth.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/api/account/route.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/login/AccountForm.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../app/login/AuthScreen.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),
+  readFile(new URL("../app/PlatformShell.tsx",import.meta.url),"utf8"),
+ ]);
+ for(const table of ["accounts","sessions"])assert.match(schema,new RegExp(`sqliteTable\\("${table}"`));
+ // Passwords are salted, stretched, and compared without leaking timing.
+ assert.match(auth,/PBKDF2/);
+ assert.match(auth,/iterations/);
+ assert.match(auth,/export function sameDigest/);
+ assert.match(auth,/HttpOnly/);
+ assert.match(api,/action==="register"/);
+ assert.match(api,/action==="login"/);
+ assert.match(api,/That username and password do not match/);
+ // The unknown-username path still hashes, so both answers cost the same.
+ assert.match(api,/const salt=account\?\.passwordSalt\?\?newSalt\(\)/);
+ for(const field of [/First name/,/Surname/,/Username/,/Password/])assert.match(form,field);
+ assert.match(screen,/Create account|CREATE ACCOUNT/);
+ assert.doesNotMatch(auth,/ChatGPT/);
+ assert.doesNotMatch(shell,/ChatGPT/);
+});
+
+test("every signed-in page shares one frame",async()=>{
+ const pages=["dashboard","challenges","battles","teams","leaderboards","history","profile","practice","arena","bots"];
+ const sources=await Promise.all(pages.map(name=>readFile(new URL(`../app/${name}/page.tsx`,import.meta.url),"utf8")));
+ for(const [index,source] of sources.entries()){
+  assert.match(source,/PlatformShell/,`${pages[index]} does not use the shared shell`);
+ }
+ const shell=await readFile(new URL("../app/PlatformShell.tsx",import.meta.url),"utf8");
+ assert.match(shell,/className="topbar"/);
+ assert.match(shell,/kicker/);
+});
+
+test("audit challenges are whole modules with one planted defect",async()=>{
+ const [content,viewer,ui,tasks]=await Promise.all([
+  readFile(new URL("../drizzle/0013_fields_and_audits.sql",import.meta.url),"utf8"),
+  readFile(new URL("../app/components/AuditViewer.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../app/challenges/Challenges.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../lib/code-tasks.ts",import.meta.url),"utf8"),
+ ]);
+ const audits=[...content.matchAll(/,'audit','([^']+)'/g)].map(match=>match[1]);
+ assert.ok(audits.length>=3,`only ${audits.length} audit tasks`);
+ // Each audit ships a real module, not a snippet.
+ const bodies=[...content.matchAll(/,'audit',[\s\S]*?,'javascript','[\s\S]*?','([\s\S]*?)',(\d+),'/g)];
+ for(const [,body,line] of bodies){
+  const lineCount=body.split("\n").length;
+  assert.ok(lineCount>=240,`an audit module has only ${lineCount} lines`);
+  assert.ok(Number(line)>=1&&Number(line)<=lineCount,"the planted line is outside the module");
+ }
+ // Reading tools, because the point is reading: search, jump, and a pinned choice.
+ assert.match(viewer,/Go to line/);
+ assert.match(viewer,/Only matches/);
+ assert.match(viewer,/scrollIntoView/);
+ assert.match(ui,/CODE AUDIT/);
+ assert.match(ui,/Reported symptom/);
+ assert.match(tasks,/hint:row\.hint/);
+});
+

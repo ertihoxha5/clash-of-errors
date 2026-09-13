@@ -1,0 +1,64 @@
+/* The shared platform frame. Cards, panels and type here match the landing
+   page so moving between sections never feels like a different product. */
+
+.frame { min-height: 100vh; display: flex; flex-direction: column; }
+.nav { display: flex; gap: 26px; flex-wrap: wrap; margin: auto; }
+.nav a { color: #aab6cc; font-weight: 600; font-size: .92rem; }
+.nav a:hover { color: var(--cyan); }
+.account { display: flex; align-items: center; gap: 12px; }
+.account .btn { min-height: 40px; padding: 0 14px; font-size: .7rem; }
+.handle { font-family: var(--font-mono), ui-monospace, monospace; font-size: .82rem; color: var(--cyan); }
+.handle:hover { text-decoration: underline; }
+.signout { font-size: .78rem; color: var(--dim); }
+.signout:hover { color: var(--pink); }
+
+.shell { flex: 1; width: 100%; max-width: 1320px; margin: 0 auto; padding: 42px max(4vw, 20px) 84px; }
+.head { display: flex; flex-wrap: wrap; gap: 22px; justify-content: space-between; align-items: flex-end; margin-bottom: 34px; }
+.title { margin: 16px 0 10px; font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1.06; text-transform: uppercase; }
+.lede { margin: 0; max-width: 76ch; color: var(--muted); line-height: 1.65; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.shell h2 { margin: 34px 0 16px; font-size: 1.1rem; letter-spacing: .04em; }
+.muted { color: var(--muted); line-height: 1.7; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 18px 0 26px; }
+
+/* Angled corner panels, the same shape language as the landing page. */
+.card { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 22px;
+  border: 1px solid var(--line); background: linear-gradient(160deg, #0c1730, #070c18);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); }
+.card h2 { margin: 0; font-size: 1.06rem; }
+.card p { margin: 0; line-height: 1.6; color: var(--muted); font-size: .9rem; flex: 1; }
+.card a { color: var(--cyan); font-weight: 600; font-size: .88rem; }
+.card a:hover { text-decoration: underline; }
+.badge { font-family: var(--font-mono), ui-monospace, monospace; font-size: .64rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--cyan); }
+.big { font-size: 2.4rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+
+.shell button, .shell select, .shell input, .shell textarea { font: inherit; padding: 11px 13px;
+  border: 1px solid var(--line); background: #0a1120; color: var(--text); }
+.shell button { cursor: pointer; }
+.shell button:hover:enabled { border-color: var(--cyan); }
+.shell button:disabled { opacity: .5; cursor: not-allowed; }
+.shell label { display: flex; flex-direction: column; gap: 7px; font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+.shell label input, .shell label select { font-family: var(--font-display), system-ui, sans-serif;
+  font-size: .92rem; letter-spacing: normal; text-transform: none; color: var(--text); }
+.row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 16px 0; }
+.shell pre { white-space: pre-wrap; background: #070c18; border: 1px solid var(--line); padding: 18px; overflow: auto;
+  font-family: var(--font-mono), ui-monospace, monospace; font-size: .84rem; }
+.notice { padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--cyan);
+  background: #0a1120; margin: 18px 0; font-size: .88rem; }
+.table { width: 100%; border-collapse: collapse; }
+.table td, .table th { padding: 14px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+.table th { font-family: var(--font-mono), ui-monospace, monospace; font-size: .66rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--dim); }
+.shell a:focus-visible, .shell button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+.foot { display: flex; flex-wrap: wrap; gap: 14px 26px; align-items: center; justify-content: space-between;
+  padding: 26px max(4vw, 20px); border-top: 1px solid #132139; color: var(--dim); font-size: .82rem; }
+.foot p { margin: 0; color: var(--muted); }
+
+@media (max-width: 900px) {
+  .nav { gap: 16px; order: 3; width: 100%; margin: 0; padding-bottom: 4px; overflow-x: auto; }
+  .nav a { font-size: .84rem; white-space: nowrap; }
+}

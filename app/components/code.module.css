@@ -1,0 +1,39 @@
+.editor { display: flex; border: 1px solid var(--line); background: #070c18; font-family: var(--font-mono), ui-monospace, monospace; font-size: .84rem; line-height: 1.65; }
+.gutter { display: flex; flex-direction: column; padding: 12px 10px; background: #0a1120; color: var(--dim); text-align: right; user-select: none; border-right: 1px solid var(--line); min-width: 40px; }
+.surface { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+.paint, .input { margin: 0; padding: 12px 14px; font: inherit; line-height: inherit; white-space: pre; overflow: auto; }
+.paint { position: absolute; inset: 0; color: #d8e4f7; pointer-events: none; }
+.paint :global(.kw) { color: #ff7ad9; font-style: normal; }
+.paint :global(.str) { color: #7be3a5; font-style: normal; }
+.paint :global(.num) { color: #ffc861; font-style: normal; }
+.paint :global(.cmt) { color: #5f708c; font-style: italic; }
+.input { position: relative; width: 100%; height: 100%; display: block; background: transparent; color: transparent; caret-color: var(--cyan); border: 0; resize: none; }
+.input:focus { outline: none; }
+.input::selection { background: #2fc8ff44; color: transparent; }
+
+/* Read-only snippet with clickable lines — the find-the-bug view. */
+.snippet { border: 1px solid var(--line); background: #070c18; font-family: var(--font-mono), ui-monospace, monospace; font-size: .84rem; overflow: hidden; }
+.line { display: grid; grid-template-columns: 42px 1fr; gap: 0; width: 100%; text-align: left; border: 0; border-left: 3px solid transparent; background: none; color: #d8e4f7; }
+.line:hover { background: #10203a; }
+.line > b { display: block; padding: 3px 10px; background: #0a1120; color: var(--dim); font-weight: 400; text-align: right; border-right: 1px solid var(--line); }
+.line > code { display: block; padding: 3px 14px; white-space: pre; overflow-x: auto; }
+.line[data-picked] { background: #17283f; border-left-color: var(--cyan); }
+.line[data-correct] { background: #0f3324; border-left-color: #3ddc97; }
+.line[data-wrong] { background: #3a1220; border-left-color: #ff4d6d; }
+.line:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+
+.editor { position: relative; flex-wrap: wrap; }
+.gutter span[data-active] { color: var(--cyan); background: #10243c; }
+.editorBar { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 8px 12px; border-top: 1px solid var(--line); background: #0a1120;
+  font-family: var(--font-mono), ui-monospace, monospace; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
+.shortcut { color: var(--dim); }
+.reset { color: var(--muted); text-decoration: underline; font: inherit; }
+.reset:hover { color: var(--pink); }
+
+/* Same reason: a snippet line is a target, not a form control. */
+.snippet button.line { padding: 0; border: 0; border-left: 3px solid transparent; background: none; }
+.snippet button.line:hover { background: #10203a; }
+.snippet button.line[data-picked] { background: #17283f; border-left-color: var(--cyan); }
+.snippet button.line[data-correct] { background: #0f3324; border-left-color: #3ddc97; }
+.snippet button.line[data-wrong] { background: #3a1220; border-left-color: #ff4d6d; }

@@ -34,8 +34,10 @@ function ensureLocalSchema(d1: D1Database): Promise<void> {
       for (const statement of statements) {
         try {
           await d1.prepare(statement).run();
-        } catch {
-          // Statement is already applied (or not idempotent) — dev only.
+        } catch (error) {
+          // Legacy local databases predate migration tracking. Only tolerate a
+          // previously applied statement; never hide a broken new migration.
+          if (!(error instanceof Error) || !/already exists|duplicate column name|UNIQUE constraint failed/i.test(error.message)) throw error;
         }
       }
     }
@@ -47,4 +49,9 @@ export async function getDb() {
   if (!runtimeEnv.DB) throw new Error(MISSING_DB);
   if (import.meta.env.DEV) await ensureLocalSchema(runtimeEnv.DB);
   return drizzle(runtimeEnv.DB, { schema });
+}
+
+export async function getStore(): Promise<D1Database> {
+  await getDb();
+  return (env as typeof env & { DB: D1Database }).DB;
 }

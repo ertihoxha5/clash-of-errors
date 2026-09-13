@@ -1,0 +1,39 @@
+-- Python code tasks, so the Python field carries hands-on work too.
+INSERT OR IGNORE INTO code_tasks (id,slug,topic_id,kind,title,difficulty,language,prompt,code,buggy_line,hint,symptom,region,fixes,tests,explanation,solution,xp,status,created_at,updated_at) SELECT 3101,'py-mutable-default',id,'bug','The list remembers','medium','python','Each call keeps the items from the call before it.','def collect(item, bucket=[]):
+    bucket.append(item)
+    return bucket',1,'','','','[{"label":"def collect(item, bucket=None):\n    bucket = [] if bucket is None else bucket","correct":true},{"label":"def collect(item, bucket=list()):","correct":false},{"label":"def collect(item, *, bucket=[]):","correct":false}]','[]','Default arguments are evaluated once, when the function is defined, so every call without an explicit bucket appends to the same list. Use None and build a fresh list inside the body.','',35,'published','2026-09-13T00:00:00.000Z','2026-09-13T00:00:00.000Z' FROM topics WHERE slug='python';
+--> statement-breakpoint
+INSERT OR IGNORE INTO code_tasks (id,slug,topic_id,kind,title,difficulty,language,prompt,code,buggy_line,hint,symptom,region,fixes,tests,explanation,solution,xp,status,created_at,updated_at) SELECT 3102,'py-range-off-by-one',id,'bug','The last index is skipped','easy','python','This misses the final element of every list it is given.','def total(values):
+    result = 0
+    for index in range(len(values) - 1):
+        result += values[index]
+    return result',3,'','','','[{"label":"    for index in range(len(values)):","correct":true},{"label":"    for index in range(1, len(values)):","correct":false},{"label":"    for index in range(len(values) + 1):","correct":false}]','[]','range(n) already stops at n - 1, so subtracting one drops the last element. range(len(values)) covers every valid index — or iterate the values directly.','',25,'published','2026-09-13T00:00:00.000Z','2026-09-13T00:00:00.000Z' FROM topics WHERE slug='python';
+--> statement-breakpoint
+INSERT OR IGNORE INTO code_tasks (id,slug,topic_id,kind,title,difficulty,language,prompt,code,buggy_line,hint,symptom,region,fixes,tests,explanation,solution,xp,status,created_at,updated_at) SELECT 3103,'py-dict-mutation-loop',id,'bug','Dictionary changed size during iteration','medium','python','This raises RuntimeError partway through.','def drop_empty(config):
+    for key in config:
+        if not config[key]:
+            del config[key]
+    return config',2,'','','','[{"label":"    for key in list(config):","correct":true},{"label":"    for key in config.keys():","correct":false},{"label":"    for key, value in config.items():","correct":false}]','[]','Deleting during iteration invalidates the iterator. Iterating over list(config) walks a snapshot of the keys, so the deletions are safe.','',35,'published','2026-09-13T00:00:00.000Z','2026-09-13T00:00:00.000Z' FROM topics WHERE slug='python';
+--> statement-breakpoint
+INSERT OR IGNORE INTO code_tasks (id,slug,topic_id,kind,title,difficulty,language,prompt,code,buggy_line,hint,symptom,region,fixes,tests,explanation,solution,xp,status,created_at,updated_at) SELECT 3104,'py-is-vs-equals',id,'bug','Identity is not equality','easy','python','This works for small numbers and then fails for large ones.','def is_expected(value, expected):
+    return value is expected',2,'','','','[{"label":"    return value == expected","correct":true},{"label":"    return value is not expected","correct":false},{"label":"    return id(value) == id(expected)","correct":false}]','[]','`is` compares object identity. Small integers and short strings are cached, so it appears to work until a value falls outside that cache. Use == for value comparison.','',25,'published','2026-09-13T00:00:00.000Z','2026-09-13T00:00:00.000Z' FROM topics WHERE slug='python';
+--> statement-breakpoint
+INSERT OR IGNORE INTO code_tasks (id,slug,topic_id,kind,title,difficulty,language,prompt,code,buggy_line,hint,symptom,region,fixes,tests,explanation,solution,xp,status,created_at,updated_at) SELECT 3105,'py-except-broad',id,'bug','The typo looks like a network error','medium','python','Every failure is reported as a timeout, including bugs in this function.','def fetch(url):
+    try:
+        return client.get(url).json()
+    except Exception:
+        return {"error": "timeout"}',4,'','','','[{"label":"    except TimeoutError:","correct":true},{"label":"    except BaseException:","correct":false},{"label":"    except Exception as error:","correct":false}]','[]','A bare `except Exception` swallows AttributeError, KeyError and everything else, so a real bug is reported as a timeout. Catch the specific failure you can handle and let the rest surface.','',35,'published','2026-09-13T00:00:00.000Z','2026-09-13T00:00:00.000Z' FROM topics WHERE slug='python';
+--> statement-breakpoint
+INSERT OR IGNORE INTO code_tasks (id,slug,topic_id,kind,title,difficulty,language,prompt,code,buggy_line,hint,symptom,region,fixes,tests,explanation,solution,xp,status,created_at,updated_at) SELECT 3106,'py-float-money',id,'bug','The invoice is a penny out','hard','python','Totals drift by a cent on long invoices.','def invoice_total(prices):
+    total = 0.0
+    for price in prices:
+        total += price
+    return round(total, 2)',2,'','','','[{"label":"    total = Decimal(\"0.00\")","correct":true},{"label":"    total = 0","correct":false},{"label":"    total = float(0)","correct":false}]','[]','Binary floats cannot represent most decimal fractions, so a long sum accumulates error that a final round cannot undo. Use decimal.Decimal — or hold integer cents.','',45,'published','2026-09-13T00:00:00.000Z','2026-09-13T00:00:00.000Z' FROM topics WHERE slug='python';
+--> statement-breakpoint
+INSERT OR IGNORE INTO code_tasks (id,slug,topic_id,kind,title,difficulty,language,prompt,code,buggy_line,hint,symptom,region,fixes,tests,explanation,solution,xp,status,created_at,updated_at) SELECT 3107,'py-shadow-builtin',id,'bug','list is not callable','easy','python','This works once and then raises TypeError on the next call.','def summarise(rows):
+    list = [row["name"] for row in rows]
+    return list(set(list))',2,'','','','[{"label":"    names = [row[\"name\"] for row in rows]","correct":true},{"label":"    list = set(row[\"name\"] for row in rows)","correct":false},{"label":"    list = tuple(row[\"name\"] for row in rows)","correct":false}]','[]','Assigning to `list` shadows the builtin inside the function, so the later list(...) call tries to call a list object. Name the variable something else.','',25,'published','2026-09-13T00:00:00.000Z','2026-09-13T00:00:00.000Z' FROM topics WHERE slug='python';
+--> statement-breakpoint
+INSERT OR IGNORE INTO code_tasks (id,slug,topic_id,kind,title,difficulty,language,prompt,code,buggy_line,hint,symptom,region,fixes,tests,explanation,solution,xp,status,created_at,updated_at) SELECT 3108,'py-two-sum-js',id,'write','Pair that sums to a target','medium','javascript','Return the two values from the array that add up to the target, as a sorted pair. Return an empty array when no pair exists. (Solve this one in JavaScript — the sandbox runs JS.)','function pairSum(values, target) {
+  // your code here
+}',NULL,'','','','[]','[{"name":"finds a pair","call":"pairSum([2, 7, 11, 15], 9)","expect":[2,7]},{"name":"sorts the pair","call":"pairSum([15, 2], 17)","expect":[2,15]},{"name":"handles no pair","call":"pairSum([1, 2], 50)","expect":[]},{"name":"handles duplicates","call":"pairSum([3, 3], 6)","expect":[3,3]},{"name":"handles an empty array","call":"pairSum([], 5)","expect":[]}]','Walk the array once, keeping a Set of values already seen: if target - value is in the set, you have the pair. Sort the two values before returning them.','',45,'published','2026-09-13T00:00:00.000Z','2026-09-13T00:00:00.000Z' FROM topics WHERE slug='python';

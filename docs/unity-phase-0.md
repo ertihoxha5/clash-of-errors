@@ -5,7 +5,7 @@ Phase 0 adds a Unity rendering foundation to the existing website. It does not a
 ## Locations and integration
 
 - Website: repository root, React 19.2.6, TypeScript, vinext 1.0.0-beta.2 / Vite 8.0.13 with Next App Router conventions; npm and `package-lock.json`.
-- Routes: `app/`; existing global styling in `app/globals.css`. `/play` adds a scoped CSS module and reuses branding/button styles. The homepage's existing **Try Demo** button now enters `/play`; other navigation is unchanged.
+- Routes: `app/`; existing global styling in `app/globals.css`. `/play` now hosts the Bug Hunt arcade and the Unity host moved to `/play/unity`, each with its own scoped CSS module reusing branding/button styles. The homepage's **Play it as Game** button enters `/play`; other navigation is unchanged.
 - Unity: `unity/ClashOfErrors/`, created from the installed `com.unity.template.urp-blank` template. Existing template assets are retained. The similarly named Unity project outside this repository was inspected but was not modified or copied.
 - Game source: `Assets/_ClashOfErrors/`, including Core scripts, Editor tools, scenes, settings, prefab, material palette, and folders reserved for future modules.
 - Unity template: `Assets/WebGLTemplates/ClashHost/index.html`. Unity substitutes real generated loader/data/framework/Wasm filenames during the build. This is a host template, not a fabricated Unity loader.
@@ -14,7 +14,7 @@ Phase 0 adds a Unity rendering foundation to the existing website. It does not a
 
 The host performs no Unity network requests until **Launch Unity demo** is clicked. It checks for a generated build page, then creates an iframe whose document owns the runtime. The parent accepts progress/ready/error messages only from that iframe's window and expected origin. Progress comes directly from Unity's callback. Startup errors and a three-minute startup timeout remove the frame and offer retry. Retry creates a new browsing context. Route unmount removes the frame, and pagehide attempts `Quit()`; a late resolving instance is also quit. This isolates the runtime under React development Strict Mode and keeps Unity keyboard handling out of the website document. Browser-dependent work is inside client effects.
 
-`UnityHost` accepts a `buildBase` prop (default `/unity/clash-of-errors`); set it in `app/play/page.tsx` for a different asset location and update the corresponding static header paths in `public/_headers` and `vite.config.ts`. All build-internal asset references are relative. A different origin requires CORS for the host's build-page check and a frame policy allowing the website; prefer same-origin assets. No localhost URL is embedded in production source.
+`UnityHost` accepts a `buildBase` prop (default `/unity/clash-of-errors`); set it in `app/play/unity/page.tsx` for a different asset location and update the corresponding static header paths in `public/_headers` and `vite.config.ts`. All build-internal asset references are relative. A different origin requires CORS for the host's build-page check and a frame policy allowing the website; prefer same-origin assets. No localhost URL is embedded in production source.
 
 ## Tooling observed on September 13, 2026
 
@@ -68,7 +68,7 @@ npm run unity:build
 npm run dev
 ```
 
-Use the Local HTTP URL printed by vinext, open the homepage, click **Try Demo**, then **Launch Unity demo**. Do not open generated HTML via `file://`.
+Use the Local HTTP URL printed by vinext, open the homepage, click **Play it as Game**, then **Launch Unity demo**. Do not open generated HTML via `file://`.
 
 Run `node scripts/check-unity-http.mjs <website-origin>` against that running server to check route responses, generated asset URLs, MIME/encoding and decompressed Wasm magic bytes. An optional second argument overrides the Unity build base. This checks delivery, not browser execution.
 
@@ -100,7 +100,7 @@ The focused tests cover SSR without a running canvas/iframe/loader, genuine prog
 Pending visual acceptance, using browser developer tools:
 
 1. Browse homepage alone: no Unity loader, data, or Wasm requests; appearance and existing navigation unchanged.
-2. Enter `/play`: no runtime download until launch. Launch and confirm the actual colored Unity primitives render without Console errors.
+2. Enter `/play/unity`: no runtime download until launch. Launch and confirm the actual colored Unity primitives render without Console errors.
 3. Resize the browser and use Fullscreen; Escape returns to the normal page. Focus website links/inputs outside the game and confirm they remain usable.
 4. Block a build request, reload, launch, and confirm a useful error with Retry. Unblock and retry successfully. With no generated build present, verify the honest unavailable message.
 5. Leave during loading and after initialization; return and launch again. Confirm only one iframe/runtime remains, no stale callbacks change the new host state, and no continuing abandoned instance.

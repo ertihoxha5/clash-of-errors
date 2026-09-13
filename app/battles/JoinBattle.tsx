@@ -1,0 +1,3 @@
+"use client";
+import {useState} from "react";
+export default function JoinBattle({code}:{code:string}){const [busy,setBusy]=useState(false),[error,setError]=useState("");async function join(){setBusy(true);try{const r=await fetch("/api/arena",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"join",code})}),d=await r.json() as {code?:string;error?:string};if(!r.ok)throw Error(d.error);location.href=`/room/${d.code}`}catch(e){setError(String(e));setBusy(false)}}return <><button disabled={busy} onClick={join}>Join battle →</button>{error&&<p role="alert">{error}</p>}</>}

@@ -1,6 +1,16 @@
-import {requireChatGPTUser} from "../chatgpt-auth";
+import {requirePlayer} from "../auth";
 import {getDb} from "../../db";
 import {topics} from "../../db/schema";
+import PlatformShell from "../PlatformShell";
 import PracticeSetup from "./PracticeSetup";
+
 export const dynamic="force-dynamic";
-export default async function Practice(){await requireChatGPTUser("/practice");const db=await getDb(),topicRows=await db.select().from(topics);return <main className="practice-page"><header className="account-nav"><a className="brand compact" href="/dashboard"><img src="/assets/mark.png" alt=""/><span>CLASH OF ERRORS</span></a><a href="/dashboard">← Command Center</a></header><PracticeSetup topics={topicRows}/></main>}
+
+export default async function Practice(){
+ await requirePlayer("/practice");
+ const db=await getDb();
+ return <PlatformShell kicker="PRACTICE LAB" title="Build mastery on one topic"
+  subtitle="A timed set of questions from one field, scored for speed and accuracy, with mastery tracked per topic.">
+  <PracticeSetup topics={await db.select().from(topics)}/>
+ </PlatformShell>;
+}

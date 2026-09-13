@@ -1,6 +1,16 @@
-import {requireChatGPTUser} from "../chatgpt-auth";
+import {requirePlayer} from "../auth";
 import {getDb} from "../../db";
 import {topics} from "../../db/schema";
+import PlatformShell from "../PlatformShell";
 import BotSetup from "./BotSetup";
+
 export const dynamic="force-dynamic";
-export default async function Bots(){await requireChatGPTUser("/bots");const db=await getDb();return <main className="bots-page"><header className="account-nav"><a className="brand compact" href="/dashboard"><img src="/assets/mark.png" alt=""/><span>CLASH OF ERRORS</span></a><a href="/dashboard">← Command Center</a></header><BotSetup topics={await db.select().from(topics)}/></main>}
+
+export default async function Bots(){
+ await requirePlayer("/bots");
+ const db=await getDb();
+ return <PlatformShell kicker="SIMULATED COMBAT" title="Bot battles"
+  subtitle="A scored solo run against simulated opponents with human-like timing. For code duels against a rival, use Battles.">
+  <BotSetup topics={await db.select().from(topics)}/>
+ </PlatformShell>;
+}

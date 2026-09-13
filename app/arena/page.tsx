@@ -1,6 +1,16 @@
-import {requireChatGPTUser} from "../chatgpt-auth";
+import {requirePlayer} from "../auth";
 import {getDb} from "../../db";
 import {topics} from "../../db/schema";
+import PlatformShell from "../PlatformShell";
 import ArenaSetup from "./ArenaSetup";
+
 export const dynamic="force-dynamic";
-export default async function Arena(){await requireChatGPTUser("/arena");const db=await getDb();return <main className="arena-page"><header className="account-nav"><a className="brand compact" href="/dashboard"><img src="/assets/mark.png" alt=""/><span>CLASH OF ERRORS</span></a><a href="/dashboard">← Command Center</a></header><ArenaSetup topics={await db.select().from(topics)}/></main>}
+
+export default async function Arena(){
+ await requirePlayer("/arena");
+ const db=await getDb();
+ return <PlatformShell kicker="MULTIPLAYER GATEWAY" title="Live rooms"
+  subtitle="Host a room for friends or join with a six-character code. Everyone answers the same questions against one clock.">
+  <ArenaSetup topics={await db.select().from(topics)}/>
+ </PlatformShell>;
+}

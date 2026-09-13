@@ -3,18 +3,29 @@ import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 import test from "node:test";
 
-test("homepage and game host SSR do not start a Unity runtime", async () => {
+async function renderRoute(route) {
   const { default: worker } = await import("../dist/server/index.js");
-  for (const route of ["/", "/play"]) {
-    const response = await worker.fetch(new Request(`http://localhost${route}`, { headers: { accept: "text/html" } }), { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } }, { waitUntil() {}, passThroughOnException() {} });
-    assert.equal(response.status, 200);
-    const html = await response.text();
+  const response = await worker.fetch(new Request(`http://localhost${route}`, { headers: { accept: "text/html" } }), { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } }, { waitUntil() {}, passThroughOnException() {} });
+  assert.equal(response.status, 200);
+  return response.text();
+}
+
+test("homepage and Unity preview SSR do not start a Unity runtime", async () => {
+  for (const route of ["/", "/play/unity"]) {
+    const html = await renderRoute(route);
     assert.doesNotMatch(html, /<iframe|<canvas|<script[^>]*src="[^"]*(?:\.loader\.js|\.wasm)/);
-    if (route === "/play") {
+    if (route === "/play/unity") {
       assert.match(html, /Launch Unity demo/);
-      assert.match(html, /Return home/);
+      assert.match(html, /Bug Hunt arcade/);
     }
   }
+});
+
+test("the arcade route server-renders its own canvas and no Unity assets", async () => {
+  const html = await renderRoute("/play");
+  assert.match(html, /<canvas/);
+  assert.match(html, /Bug\s*<em>Hunt/);
+  assert.doesNotMatch(html, /<iframe|<script[^>]*src="[^"]*(?:\.loader\.js|\.wasm)/);
 });
 
 async function templateHarness(createUnityInstance) {

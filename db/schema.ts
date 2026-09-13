@@ -114,3 +114,97 @@ export const profiles=sqliteTable("profiles",{
  streak:integer("streak").notNull().default(0),
  updatedAt:text("updated_at").notNull(),
 });
+
+export const teams=sqliteTable("teams",{
+ id:text("id").primaryKey(),name:text("name").notNull(),inviteCode:text("invite_code").notNull().unique(),captainId:text("captain_id").notNull().references(()=>users.id),createdAt:text("created_at").notNull(),
+});
+export const teamMembers=sqliteTable("team_members",{
+ userId:text("user_id").primaryKey().references(()=>users.id,{onDelete:"cascade"}),teamId:text("team_id").notNull().references(()=>teams.id,{onDelete:"cascade"}),joinedAt:text("joined_at").notNull(),
+},t=>[index("idx_team_members_team").on(t.teamId,t.joinedAt)]);
+export const challengeAttempts=sqliteTable("challenge_attempts",{
+ id:text("id").primaryKey(),userId:text("user_id").notNull().references(()=>users.id),questionId:integer("question_id").notNull().references(()=>questions.id),optionId:integer("option_id").notNull().references(()=>questionOptions.id),correct:integer("correct",{mode:"boolean"}).notNull(),createdAt:text("created_at").notNull(),
+},t=>[index("idx_challenge_attempts_user_question").on(t.userId,t.questionId),index("idx_challenge_attempts_user_created").on(t.userId,t.createdAt)]);
+export const platformRewards=sqliteTable("platform_rewards",{
+ userId:text("user_id").notNull().references(()=>users.id),source:text("source").notNull(),xp:integer("xp").notNull(),createdAt:text("created_at").notNull(),
+},t=>[uniqueIndex("idx_platform_rewards_user_source").on(t.userId,t.source)]);
+
+// Code tasks are the real challenge content: "find the bug" tasks are verified
+// entirely on the server (a line number plus a fix choice), while "write" tasks
+// carry their test list and are executed in the browser's sandboxed worker.
+export const codeTasks=sqliteTable("code_tasks",{
+ id:integer("id").primaryKey({autoIncrement:true}),
+ slug:text("slug").notNull().unique(),
+ topicId:integer("topic_id").notNull().references(()=>topics.id),
+ kind:text("kind").notNull(),
+ title:text("title").notNull(),
+ difficulty:text("difficulty").notNull().default("medium"),
+ language:text("language").notNull().default("javascript"),
+ prompt:text("prompt").notNull(),
+ code:text("code").notNull(),
+ buggyLine:integer("buggy_line"),
+ hint:text("hint").notNull().default(""),
+ symptom:text("symptom").notNull().default(""),
+ region:text("region").notNull().default(""),
+ fixes:text("fixes").notNull().default("[]"),
+ tests:text("tests").notNull().default("[]"),
+ explanation:text("explanation").notNull(),
+ solution:text("solution").notNull().default(""),
+ xp:integer("xp").notNull().default(30),
+ status:text("status").notNull().default("published"),
+ createdAt:text("created_at").notNull(),
+ updatedAt:text("updated_at").notNull(),
+},t=>[index("idx_code_tasks_kind_difficulty").on(t.kind,t.difficulty),index("idx_code_tasks_topic").on(t.topicId)]);
+
+export const codeAttempts=sqliteTable("code_attempts",{
+ id:text("id").primaryKey(),
+ userId:text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}),
+ taskId:integer("task_id").notNull().references(()=>codeTasks.id,{onDelete:"cascade"}),
+ source:text("source").notNull().default("challenge"),
+ passed:integer("passed",{mode:"boolean"}).notNull(),
+ testsPassed:integer("tests_passed").notNull().default(0),
+ testsTotal:integer("tests_total").notNull().default(0),
+ durationMs:integer("duration_ms").notNull().default(0),
+ createdAt:text("created_at").notNull(),
+},t=>[index("idx_code_attempts_user_task").on(t.userId,t.taskId),index("idx_code_attempts_user_created").on(t.userId,t.createdAt)]);
+
+// One duel row is one 1v1 against an NPC. The rival's progress is a schedule of
+// millisecond offsets fixed at creation, so both sides read the same clock and
+// the server stays the authority on who won.
+export const duels=sqliteTable("duels",{
+ id:text("id").primaryKey(),
+ code:text("code").notNull().unique(),
+ userId:text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}),
+ taskId:integer("task_id").notNull().references(()=>codeTasks.id),
+ npcSlug:text("npc_slug").notNull(),
+ npcTier:text("npc_tier").notNull(),
+ npcSchedule:text("npc_schedule").notNull(),
+ timeLimit:integer("time_limit").notNull().default(600),
+ testsTotal:integer("tests_total").notNull(),
+ userTestsPassed:integer("user_tests_passed").notNull().default(0),
+ status:text("status").notNull().default("active"),
+ winner:text("winner"),
+ xpEarned:integer("xp_earned").notNull().default(0),
+ startedAt:text("started_at").notNull(),
+ completedAt:text("completed_at"),
+},t=>[index("idx_duels_user_started").on(t.userId,t.startedAt)]);
+
+// Local accounts. `users` stays the identity every other table points at; an
+// account adds the credentials and the human name behind it.
+export const accounts=sqliteTable("accounts",{
+ userId:text("user_id").primaryKey().references(()=>users.id,{onDelete:"cascade"}),
+ username:text("username").notNull().unique(),
+ firstName:text("first_name").notNull(),
+ lastName:text("last_name").notNull(),
+ passwordHash:text("password_hash").notNull(),
+ passwordSalt:text("password_salt").notNull(),
+ iterations:integer("iterations").notNull().default(150000),
+ createdAt:text("created_at").notNull(),
+ updatedAt:text("updated_at").notNull(),
+});
+
+export const sessions=sqliteTable("sessions",{
+ token:text("token").primaryKey(),
+ userId:text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}),
+ createdAt:text("created_at").notNull(),
+ expiresAt:text("expires_at").notNull(),
+},t=>[index("idx_sessions_user").on(t.userId),index("idx_sessions_expiry").on(t.expiresAt)]);
