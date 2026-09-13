@@ -1,0 +1,12 @@
+.host { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+.title { font-size: clamp(2rem, 5vw, 3.5rem); margin: 12px 0; }
+.host > p { color: #b7bfd5; line-height: 1.6; }
+.area { position: relative; width: 100%; aspect-ratio: 16 / 9; min-height: 300px; background: #090d20; border: 1px solid #34415c; border-radius: 12px; overflow: hidden; margin: 24px 0; }
+.area:fullscreen { border: 0; border-radius: 0; height: 100vh; }
+.area iframe { width: 100%; height: 100%; border: 0; display: block; }
+.status { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; background: #090d20; gap: 16px; }
+.status progress { accent-color: #20d8ef; width: min(300px, 65vw); }
+.controls { display: flex; flex-wrap: wrap; gap: 16px; }
+.controls a { text-decoration: none; }
+.controls button:disabled { opacity: .45; cursor: not-allowed; }
+.hint { font-size: .85rem; }

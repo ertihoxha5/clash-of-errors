@@ -1,7 +1,8 @@
 import { sites } from "@openai/sites-vite-plugin";
 import vinext from "vinext";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import hostingConfig from "./.openai/hosting.json";
+import { fileURLToPath } from "node:url";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
@@ -10,6 +11,19 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
+
+// Unity's gzip fallback uses a custom extension that Vite has no MIME entry for.
+const unityAssetHeaders: Plugin = {
+  name: "clash-unity-asset-headers",
+  configureServer(server) {
+    server.middlewares.use((request, response, next) => {
+      const pathname = request.url?.split("?")[0] ?? "";
+      if (pathname.startsWith("/unity/clash-of-errors/") && pathname.endsWith(".unityweb"))
+        response.setHeader("Content-Type", "application/octet-stream");
+      next();
+    });
+  },
+};
 
 const localBindingConfig = {
   main: "./worker/index.ts",
@@ -44,10 +58,14 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
-    server: isCodexSeatbeltSandbox
-      ? { watch: { useFsEvents: false, usePolling: true } }
-      : undefined,
+    server: {
+      watch: {
+        ignored: [fileURLToPath(new URL("./unity/", import.meta.url)).replaceAll("\\", "/") + "**", "**/artifacts/**"],
+        ...(isCodexSeatbeltSandbox ? { useFsEvents: false, usePolling: true } : {}),
+      },
+    },
     plugins: [
+      unityAssetHeaders,
       vinext(),
       sites(),
       cloudflare({

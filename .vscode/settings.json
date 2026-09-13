@@ -1,0 +1,8 @@
+{
+  "dotnet.defaultSolution": "unity/ClashOfErrors/ClashOfErrors.slnx",
+  "files.watcherExclude": {
+    "**/unity/**/Library/**": true,
+    "**/unity/**/Temp/**": true,
+    "**/artifacts/unity/**": true
+  }
+}

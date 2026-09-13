@@ -87,3 +87,11 @@ test("implements persistent multiplayer lobbies with presence and host controls"
  for(const table of ["arenas","arena_participants"])assert.match(schema,new RegExp(`sqliteTable\\("${table}"`));
  assert.match(arenaApi,/export async function POST/);assert.match(arenaApi,/Arena is full/);assert.match(roomApi,/lastSeenAt/);assert.match(roomApi,/Only the host can start/);assert.match(roomApi,/isHost:true/);assert.match(setup,/JOIN ARENA/);assert.match(lobby,/ROOM CODE/);assert.match(lobby,/Start battle/);assert.match(migration,/idx_arena_participants_presence/);
 });
+
+test("implements a server-authoritative persistent multiplayer battle engine",async()=>{
+ const [schema,lobbyApi,battleApi,battleUi,migration,scoring]=await Promise.all([
+  readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),readFile(new URL("../app/api/room/[code]/route.ts",import.meta.url),"utf8"),readFile(new URL("../app/api/battle/[code]/route.ts",import.meta.url),"utf8"),readFile(new URL("../app/battle/[code]/BattleArena.tsx",import.meta.url),"utf8"),readFile(new URL("../drizzle/0006_thankful_lightspeed.sql",import.meta.url),"utf8"),readFile(new URL("../lib/scoring.ts",import.meta.url),"utf8")
+ ]);
+ for(const table of ["arena_battle_questions","arena_answers"])assert.ok(schema.includes(`sqliteTable("${table}"`));
+ assert.match(lobbyApi,/SCORING_VERSION/);assert.match(lobbyApi,/status:"active"/);assert.match(battleApi,/Date\.parse\(startedAt\)/);assert.match(battleApi,/Submission window closed/);assert.match(battleApi,/Question already answered/);assert.match(battleApi,/status:"completed"/);assert.match(battleApi,/scoreAnswer/);assert.match(scoring,/streakBonus/);assert.match(battleUi,/LIVE LEADERBOARD/);assert.match(battleUi,/FINAL/);assert.match(migration,/idx_arena_answers_participant_question/);
+});

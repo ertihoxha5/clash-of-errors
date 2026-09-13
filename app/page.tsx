@@ -64,7 +64,7 @@ export default function Home(){
     <p>Live multiplayer battles. AI-powered feedback. Real skill progression. Welcome to the arena where only the sharpest code survives.</p>
     <div className="hero-actions">
      <Btn tone="cyan" onClick={()=>go("modes")}><Icon name="swords"/> Start Battle</Btn>
-     <Btn tone="pink" variant="outline" onClick={()=>ping("Demo arena queued for Milestone 3")}><Icon name="play"/> Try Demo</Btn>
+     <Btn tone="pink" variant="outline" onClick={()=>{window.location.href="/play"}}><Icon name="play"/> Try Demo</Btn>
     </div>
     <ul className="chips">{chips.map(c=><li key={c.label}><Icon name={c.icon}/>{c.label}</li>)}</ul>
    </div>

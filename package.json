@@ -11,7 +11,9 @@
     "start": "vinext start",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "unity:build": "powershell -NoProfile -File scripts/unity-web.ps1 -Action Build",
+    "test:unity": "node --test tests/unity-host.test.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

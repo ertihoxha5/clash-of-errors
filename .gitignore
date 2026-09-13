@@ -38,3 +38,24 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
+
+# Unity source lives in unity/; generated players are rebuilt before website packaging.
+/unity/**/[Ll]ibrary/
+/unity/**/[Tt]emp/
+/unity/**/[Oo]bj/
+/unity/**/[Ll]ogs/
+/unity/**/[Uu]ser[Ss]ettings/
+/unity/**/[Bb]uilds/
+/unity/**/[Bb]uild/
+/unity/**/MemoryCaptures/
+/unity/**/Recordings/
+/unity/**/*.user
+/unity/**/*.userprefs
+/unity/**/*.csproj
+/unity/**/*.sln
+/unity/**/*.slnx
+/unity/**/.vs/
+/unity/**/.idea/
+/public/unity/clash-of-errors/
+/artifacts/unity/
+/debug.log

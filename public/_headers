@@ -1,0 +1,8 @@
+/unity/clash-of-errors/Build/*.unityweb
+  Content-Type: application/octet-stream
+
+/unity/clash-of-errors/index.html
+  Cache-Control: no-cache
+
+/unity/clash-of-errors/
+  Cache-Control: no-cache

@@ -1,5 +1,13 @@
 # vinext-starter
 
+## Clash of Errors Unity Web foundation
+
+The existing website now has a Unity host at `/play`, reached by **Try Demo**.
+Unity source lives in `unity/ClashOfErrors`; generated player files are kept separate.
+See [Phase 0 setup, build workflow, and validation](docs/unity-phase-0.md).
+Build the Unity player with `npm run unity:build` before building a website package
+that should include it. No gameplay systems beyond the rendering foundation are added.
+
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
 Drizzle support.
