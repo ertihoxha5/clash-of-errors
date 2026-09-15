@@ -4,9 +4,10 @@ import {
 } from "three";
 import { ResourceScope } from "../core/ResourceScope";
 
-/** Original primitive arena. Physics and the player arrive in Phase 2. */
+/** Visible solid meshes are also the source of the static collision world. */
 export class BreachArena {
   readonly root = new Group();
+  readonly solids = new Group();
   private resources = new ResourceScope();
   private core = new Group();
   private rings = new Group();
@@ -18,6 +19,7 @@ export class BreachArena {
 
   private build(): void {
     this.root.name = "System Breach / Archive Zero";
+    this.root.add(this.solids);
     const box = this.resources.own(new BoxGeometry(1, 1, 1));
     const metal = this.resources.own(new MeshStandardMaterial({ color: 0x243444, roughness: .75, metalness: .4 }));
     const dark = this.resources.own(new MeshStandardMaterial({ color: 0x111c2b, roughness: .8, metalness: .3 }));
@@ -30,7 +32,7 @@ export class BreachArena {
       mesh.position.set(x, y, z);
       mesh.scale.set(w, h, d);
       mesh.castShadow = mesh.receiveShadow = true;
-      this.root.add(mesh);
+      this.solids.add(mesh);
       return mesh;
     };
     const strip = (x: number, y: number, z: number, w: number, h: number, d: number, material = cyan) => {
@@ -72,7 +74,7 @@ export class BreachArena {
     pedestal.position.set(0, .45, -3);
     pedestal.receiveShadow = true;
     pedestal.castShadow = true;
-    this.root.add(pedestal);
+    this.solids.add(pedestal);
     this.core.position.set(0, 4.1, -3);
     const heart = new Mesh(this.resources.own(new OctahedronGeometry(1.25)), cyan);
     const shell = new Mesh(this.resources.own(new OctahedronGeometry(1.65)), this.resources.own(new MeshBasicMaterial({ color: 0xd5b77d, wireframe: true })));
@@ -120,6 +122,7 @@ export class BreachArena {
   dispose(): void {
     this.root.removeFromParent();
     this.root.clear();
+    this.solids.clear();
     this.core.clear();
     this.rings.clear();
     this.resources.dispose();

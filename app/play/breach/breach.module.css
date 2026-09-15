@@ -26,6 +26,11 @@
 .footer p, .notice { color: var(--muted); font-size: .875rem; line-height: 1.6; margin: 0; }
 .footer a { flex-shrink: 0; color: var(--cyan); font-size: .875rem; padding: 10px 0; }
 .notice { margin-top: 16px; }
+.keyGuide { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 20px; max-width: 540px; color: var(--muted); font-size: .875rem; }
+.keyGuide kbd { color: var(--text); padding: 4px 6px; border: 1px solid var(--line); background: #14202d; font: .8rem var(--font-mono), monospace; }
+.movementHud { position: absolute; left: 24px; top: 62px; display: flex; gap: 16px; pointer-events: none; text-transform: uppercase; color: var(--text); font: .75rem var(--font-mono), monospace; text-shadow: 0 2px 4px #000; }
+.movementHud span { background: #080e19c9; border-left: 2px solid var(--cyan); padding: 8px 10px; }
+.captureHint { position: absolute; left: 50%; top: 110px; transform: translateX(-50%); margin: 0; padding: 10px 16px; width: max-content; max-width: 85%; background: #080e19e6; border: 1px solid var(--line); color: var(--text); font-size: .875rem; text-align: center; line-height: 1.5; pointer-events: none; }
 @media (max-width: 700px) {
   .host { padding: 24px 16px; }
   .heading { align-items: flex-start; flex-direction: column; gap: 14px; }
