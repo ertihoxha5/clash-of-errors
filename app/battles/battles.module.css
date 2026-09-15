@@ -17,3 +17,14 @@
 
 .launch { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 22px; }
 .launch p { margin: 0; font-size: .82rem; color: var(--muted); }
+/* Heraldic rival banners retain their distinct house colours. */
+.sectionTitle{color:var(--gold)}
+.roster{gap:16px}
+.rival{position:relative;background:linear-gradient(160deg,#242633,#101722);padding:26px 16px 24px;border-radius:45% 45% 5px 5px;border-top:2px solid #766345;min-height:230px}
+.rival svg{filter:drop-shadow(0 8px 16px #0008)}
+.rival b{font-family:var(--font-realm);font-size:1.3rem;font-weight:500}
+.rival p{color:var(--muted)}
+.rival[data-picked]{border-color:var(--gold);box-shadow:inset 0 -3px var(--gold),0 0 25px #bc9e6220;background:linear-gradient(160deg,#343041,#141d2a)}
+.level{background:var(--surface);border-radius:5px;padding:18px}
+.level[data-picked]{border-color:var(--gold);background:#302b22}
+.launch{padding:20px;border:1px solid var(--gold-line);background:#1c2028;border-radius:5px}

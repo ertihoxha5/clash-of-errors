@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync} from 'node:fs';
+import {INACTIVITY_SWEEP,LOGIN_INSERT,SPIN_INSERT} from '../lib/progression-sql.ts';
+import {RANKS,rankForXp,lossCost} from '../lib/ranks.ts';
+import {EARNED_SHARDS,SPENT_SHARDS,PURCHASE_SQL} from '../lib/laboratory.ts';
+function setup(){const db=new DatabaseSync(':memory:');db.exec(`
+ PRAGMA foreign_keys=ON;
+ CREATE TABLE users(id TEXT PRIMARY KEY);
+ CREATE TABLE profiles(user_id TEXT PRIMARY KEY,xp INTEGER DEFAULT 0,level INTEGER DEFAULT 1,rank TEXT DEFAULT 'Bronze I',updated_at TEXT);
+ CREATE TABLE code_tasks(id INTEGER PRIMARY KEY,xp INTEGER);
+ CREATE TABLE code_attempts(id TEXT PRIMARY KEY,user_id TEXT,task_id INTEGER,passed INTEGER);
+ CREATE TABLE challenge_attempts(id TEXT PRIMARY KEY,user_id TEXT,question_id INTEGER,correct INTEGER);
+ CREATE TABLE practice_sessions(id TEXT PRIMARY KEY,user_id TEXT);
+ CREATE TABLE practice_answers(id INTEGER PRIMARY KEY,session_id TEXT);
+ CREATE TABLE bot_battles(id TEXT PRIMARY KEY,user_id TEXT);
+ CREATE TABLE bot_battle_answers(id INTEGER PRIMARY KEY,battle_id TEXT);
+ CREATE TABLE arena_participants(id INTEGER PRIMARY KEY,user_id TEXT);
+ CREATE TABLE arena_answers(id INTEGER PRIMARY KEY,participant_id INTEGER);
+ CREATE TABLE duels(id TEXT PRIMARY KEY,user_id TEXT,user_tests_passed INTEGER);
+ CREATE TABLE platform_rewards(user_id TEXT,source TEXT,xp INTEGER,UNIQUE(user_id,source));
+ CREATE TABLE lab_unlocks(user_id TEXT,item TEXT,cost INTEGER,created_at TEXT,UNIQUE(user_id,item));
+ `);for(const file of ['0016_fluffy_moira_mactaggert','0017_progression_rules'])db.exec(readFileSync(new URL(`../drizzle/${file}.sql`,import.meta.url),'utf8'));db.exec("INSERT INTO users VALUES ('a'),('b');INSERT INTO profiles(user_id) VALUES ('a'),('b');INSERT INTO code_tasks VALUES (1,49)");return db}
+const profile=db=>db.prepare("SELECT * FROM profiles WHERE user_id='a'").get();
+test('daily sign-in is once per account per UTC day and tracks rank',()=>{const db=setup(),insert=db.prepare(LOGIN_INSERT);insert.run('a','login:2026-09-14','2026-09-14T00:00:00Z');insert.run('a','login:2026-09-14','2026-09-14T12:00:00Z');assert.equal(profile(db).xp,30);insert.run('a','login:2026-09-15','2026-09-15T00:00:00Z');assert.equal(profile(db).xp,60);assert.equal(db.prepare("SELECT xp FROM profiles WHERE user_id='b'").get().xp,0);db.close()});
+test('wheel awards one persisted outcome even when a second request proposes another prize',()=>{const db=setup(),insert=db.prepare(SPIN_INSERT);insert.run('a','spin:2026-09-14','10 Shards',0,10,1,'2026-09-14');insert.run('a','spin:2026-09-14','100 XP',100,0,5,'2026-09-14');assert.equal(profile(db).xp,0);assert.equal(db.prepare("SELECT prize FROM progression_events WHERE user_id='a'").get().prize,1);assert.equal(db.prepare(`SELECT ${EARNED_SHARDS} earned`).get('a').earned,10);db.prepare("INSERT INTO platform_rewards VALUES ('a','task:1',50)").run();assert.equal(db.prepare(PURCHASE_SQL).run('a','reactor',20,'now','a','a',20).changes,1);assert.equal(db.prepare(`SELECT ${EARNED_SHARDS}-${SPENT_SHARDS} balance`).get('a','a').balance,0);db.close()});
+test('inactivity starts at 48 hours, settles once per absence, and clamps at zero',()=>{const db=setup();db.exec("UPDATE profiles SET xp=700 WHERE user_id='a';UPDATE player_activity SET last_participated='2026-09-12T10:00:00Z' WHERE user_id='a'");const sweep=db.prepare(INACTIVITY_SWEEP);sweep.run('2026-09-14T09:59:59Z','2026-09-14T09:59:59Z');assert.equal(profile(db).xp,700);sweep.run('2026-09-14T10:00:00Z','2026-09-14T10:00:00Z');assert.equal(profile(db).xp,500);sweep.run('2026-09-20T10:00:00Z','2026-09-20T10:00:00Z');assert.equal(profile(db).xp,500);db.exec("UPDATE profiles SET xp=80 WHERE user_id='b';UPDATE player_activity SET last_participated='2026-09-12T10:00:00Z' WHERE user_id='b'");sweep.run('2026-09-14T10:00:00Z','2026-09-14T10:00:00Z');assert.equal(db.prepare("SELECT xp FROM profiles WHERE user_id='b'").get().xp,0);db.close()});
+test('failed challenge costs ceiling 20 percent once daily; retries are free and success resets activity',()=>{const db=setup();db.exec("UPDATE profiles SET xp=255 WHERE user_id='a'");const attempt=db.prepare("INSERT INTO code_attempts VALUES (?,'a',1,?)");attempt.run('try1',0);assert.equal(profile(db).xp,245);assert.equal(profile(db).rank,'Bronze I');attempt.run('try2',0);assert.equal(profile(db).xp,245);attempt.run('solved',1);assert.equal(profile(db).xp,245);const a=db.prepare("SELECT last_participated FROM player_activity WHERE user_id='a'").get();assert.ok(Date.now()-Date.parse(a.last_participated)<5000);assert.equal(lossCost(49),10);db.close()});
+test('all badge thresholds match the database and demotion works',()=>{const db=setup();for(const r of RANKS){db.prepare("UPDATE profiles SET xp=? WHERE user_id='a'").run(r.xp);assert.equal(profile(db).rank,r.name);assert.equal(rankForXp(r.xp).name,r.name);if(r.xp>0){db.prepare("UPDATE profiles SET xp=? WHERE user_id='a'").run(r.xp-1);assert.equal(profile(db).rank,rankForXp(r.xp-1).name)}}db.close()});
+test('participation settles an overdue deduction before resetting the clock',()=>{const db=setup();db.exec("UPDATE profiles SET xp=800 WHERE user_id='a';UPDATE player_activity SET last_participated='2020-01-01T00:00:00Z' WHERE user_id='a';INSERT INTO practice_sessions VALUES ('s','a');INSERT INTO practice_answers VALUES (1,'s')");assert.equal(profile(db).xp,600);const activity=db.prepare("SELECT last_participated FROM player_activity WHERE user_id='a'").get();assert.ok(Date.now()-Date.parse(activity.last_participated)<5000);const now=new Date().toISOString();db.prepare(INACTIVITY_SWEEP).run(now,now);assert.equal(profile(db).xp,600);db.close()});

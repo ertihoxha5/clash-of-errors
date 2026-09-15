@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
 :root{
- --bg:#05070f;--bg2:#080d1c;--panel:#0a1120;--line:#1b3358;
- --cyan:#2fc8ff;--pink:#f23cd5;--purple:#9a6cff;
- --text:#f4f8ff;--muted:#8b9bb7;--dim:#5f708c;
+ --bg:#080b12;--bg2:#101722;--panel:#141c29;--line:#35404d;
+ --cyan:#76d6dd;--pink:#cf97c5;--purple:#ab9add;
+ --text:#f2eee4;--muted:#b0b5bf;--dim:#929aa8;
+ --gold:#d5b77d;--gold-line:#766345;--surface:linear-gradient(145deg,#1b2430,#101620);
+ --font-realm:Georgia,"Times New Roman",serif;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}

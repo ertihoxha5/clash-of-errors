@@ -22,9 +22,11 @@ export async function POST(request:Request){
     const option=await p.db.prepare("SELECT o.is_correct correct,q.explanation FROM question_options o JOIN questions q ON q.id=o.question_id WHERE o.id=? AND q.id=? AND q.status='published'").bind(body.optionId,body.questionId).first<{correct:number;explanation:string}>();
     if(!option)return Response.json({error:"Invalid challenge answer"},{status:400});
     const previous=await p.db.prepare("SELECT 1 FROM platform_rewards WHERE user_id=? AND source=?").bind(p.user.userId,`challenge:${body.questionId}`).first();
-    const statements=[p.db.prepare("INSERT INTO challenge_attempts (id,user_id,question_id,option_id,correct,created_at) VALUES (?,?,?,?,?,?)").bind(crypto.randomUUID(),p.user.userId,body.questionId,body.optionId,option.correct,new Date().toISOString())];
+    const attemptId=crypto.randomUUID();
+    const statements=[p.db.prepare("INSERT INTO challenge_attempts (id,user_id,question_id,option_id,correct,created_at) VALUES (?,?,?,?,?,?)").bind(attemptId,p.user.userId,body.questionId,body.optionId,option.correct,new Date().toISOString())];
     if(option.correct)statements.push(...rewardStatements(p.db,p.user.userId,`challenge:${body.questionId}`,25));
     const result=await p.db.batch(statements);
-    return Response.json({correct:!!option.correct,explanation:option.explanation,xp:option.correct&&!previous&&result[1]?.meta.changes===1?25:0});
+    const penalty=await p.db.prepare("SELECT xp_delta FROM progression_events WHERE user_id=? AND label=?").bind(p.user.userId,`Failed question · ${attemptId}`).first<{xp_delta:number}>();
+    return Response.json({correct:!!option.correct,explanation:option.explanation,xp:option.correct&&!previous&&result[1]?.meta.changes===1?25:0,xpLost:penalty?-penalty.xp_delta:0});
   }catch(error){return apiError(error);}
 }

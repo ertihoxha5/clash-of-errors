@@ -81,3 +81,14 @@
   .auditLayout { grid-template-columns: 1fr; }
   .auditLayout .fixes { position: static; }
 }
+/* Quest board and readable workbench. */
+.filters{padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.card{background:var(--surface);border-radius:5px;border-top-width:2px;padding:24px;box-shadow:0 10px 24px #0002}
+.card h2{font-family:var(--font-realm);font-weight:500;font-size:1.45rem;line-height:1.25;margin:8px 0}
+.card footer{border-top:1px solid var(--line);padding-top:14px}
+.kind{color:var(--gold)}.chipOn{border-color:var(--gold);background:#332d21;color:#f2dab0}
+.solved{background:#16352d;color:#9ce4c1;border-color:#52826d;border-radius:3px}
+.taskHead{padding:22px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.taskHead h2{font-family:var(--font-realm);font-weight:500;font-size:1.8rem}
+.verdict{border-radius:5px;padding:22px}.fix,.fixPicked,.test{border-radius:4px}
+.progress{color:var(--gold)}

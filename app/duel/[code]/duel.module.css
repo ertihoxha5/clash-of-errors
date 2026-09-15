@@ -110,3 +110,11 @@
   .scoreRight { text-align: left; }
   .barRival { margin-left: 0; }
 }
+/* Arena framing and score contrast. */
+.arena{background:radial-gradient(ellipse at 50% 0,#67503918,transparent 60%)}
+.liveTag{border-radius:4px;box-shadow:none;background:#281821;border-color:#a56c7b;color:#f1adbb}
+.liveTag[data-finished]{border-color:var(--gold-line);color:var(--gold)}
+.board li{background:#141c28;border-radius:4px;padding:10px}
+.board li[data-you]{border-color:var(--gold);background:#302c24}
+.result{background:var(--surface);border-radius:5px;padding:24px}
+.result b{font-family:var(--font-realm);text-transform:none;font-size:1.6rem;font-weight:500}

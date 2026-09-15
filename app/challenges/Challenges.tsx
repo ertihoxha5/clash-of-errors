@@ -6,6 +6,7 @@ import CodeEditor from "../components/CodeEditor";
 import {runTests,type TestOutcome} from "../../lib/sandbox";
 import s from "../platform.module.css";
 import c from "./challenges.module.css";
+import {lossCost} from "../../lib/ranks";
 
 type Kind="bug"|"write"|"audit";
 type Summary={id:number;kind:Kind;title:string;prompt:string;difficulty:string;language:string;xp:number;topic:string;testCount:number;solved:boolean;symptom:string;lineCount:number};
@@ -13,7 +14,7 @@ type Task={id:number;kind:Kind;title:string;difficulty:string;language:string;pr
  fixes:string[];tests:{name:string;call:string;expect:unknown}[];testCount:number;xp:number;topic:string;
  hint:string;symptom:string;region:string;lineCount:number};
 type Verdict={correct:boolean;explanation:string;xp:number;buggyLine?:number;lineCorrect?:boolean;fixCorrect?:boolean;
- testsPassed?:number;testsTotal?:number;solution?:string};
+ testsPassed?:number;testsTotal?:number;solution?:string;xpLost?:number};
 
 const KIND_LABEL:Record<Kind,string>={bug:"FIND THE BUG",write:"WRITE THE CODE",audit:"CODE AUDIT"};
 const KIND_FILTERS:[string,string][]=[["","All challenges"],["bug","Find the bug"],["write","Write the code"],["audit","Code audits"]];
@@ -115,6 +116,7 @@ export default function Challenges(){
      <span className={s.badge} data-kind={task.kind}>{KIND_LABEL[task.kind]} · {task.difficulty.toUpperCase()} · {task.topic}</span>
      <h2>{task.title}</h2>
      <p>{task.prompt}</p>
+     <p className={c.hint}>First solve: +{task.xp} XP. Failed submission: −{lossCost(task.xp)} XP once per day. Further retries today are free.</p>
     </div>
     <button className="btn cyan outline" onClick={close}>← All challenges</button>
    </header>
@@ -178,8 +180,9 @@ export default function Challenges(){
    {verdict&&<div className={`${c.verdict} ${verdict.correct?c.good:c.bad}`} role="status">
     <b>{verdict.correct?"Solved":task.kind==="write"?"Tests still failing":(verdict.lineCorrect?"Right line, wrong fix":"Not that line")}</b>
     <p>{verdict.explanation}</p>
+    {!!verdict.xpLost&&<p>−{verdict.xpLost} XP. The daily penalty for this challenge has been applied. Further retries today are free.</p>}
     {verdict.solution&&<pre className={c.solution}>{verdict.solution}</pre>}
-    {verdict.xp>0&&<span className={c.xp}>+{verdict.xp} XP</span>}
+    {verdict.xp>0&&<span className={c.xp}>+{verdict.xp} XP · +{Math.floor(verdict.xp/5)} Aether Shards · <a href="/laboratory">Upgrade your laboratory →</a></span>}
    </div>}
 
    <div className={c.actions}>

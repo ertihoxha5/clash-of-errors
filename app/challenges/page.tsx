@@ -9,7 +9,7 @@ export default async function Page(){
  return <PlatformShell
   kicker="CHALLENGE LAB"
   title="Three ways to practise"
-  subtitle="Find the bug in a short snippet, write the function until every test passes, or audit a full 300-line module for the single line that lies. First solve pays XP; battles are where you race someone for it.">
+  subtitle="First-time solves earn XP and Aether Shards. A failed submission costs 20% of the challenge reward, rounded up, once per challenge per UTC day. Further retries that day are free; XP never falls below zero.">
   <Challenges/>
  </PlatformShell>;
 }

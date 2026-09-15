@@ -22,7 +22,7 @@ type Bullet={x:number;y:number;vx:number;vy:number;life:number;hostile:boolean;d
 type Particle={x:number;y:number;vx:number;vy:number;life:number;maxLife:number;color:string};
 type Terminal={id:number;x:number;y:number;taskIndex:number;state:"live"|"patched"|"locked";lockedUntil:number;pulse:number};
 type Task={id:number;title:string;prompt:string;difficulty:string;lines:string[];fixes:string[]};
-type Verdict={correct:boolean;explanation:string;buggyLine?:number;lineCorrect?:boolean};
+type Verdict={correct:boolean;explanation:string;buggyLine?:number;lineCorrect?:boolean;xpLost?:number};
 type Phase="menu"|"playing"|"terminal"|"paused"|"over";
 type Hud={score:number;sector:number;hp:number;seconds:number;patched:number;terminals:number;combo:number};
 
@@ -599,10 +599,12 @@ export default function BugHunter(){
      {verdict&&<p className={verdict.correct?styles.patched:styles.failed} role="status">
       <b>{verdict.correct?"Terminal patched":verdict.lineCorrect?"Right line, wrong fix":"Wrong line"}</b>
       {verdict.explanation}
+      {!!verdict.xpLost&&<span> −{verdict.xpLost} XP. Further attempts at this challenge today have no XP penalty.</span>}
      </p>}
      <div className={styles.terminalActions}>
       {!verdict&&<button className="btn cyan solid" disabled={grading||picked===null||fixIndex===null} onClick={gradeTerminal}>
        {grading?"Checking…":"Submit patch"}</button>}
+      {!verdict&&<small>A failed patch costs 20% of its challenge XP once per day. Your balance cannot fall below zero.</small>}
       {!verdict&&<button className="btn pink outline" onClick={leaveTerminal}>Back off</button>}
       {verdict&&<button className="btn cyan solid" onClick={leaveTerminal}>Return to the sector</button>}
      </div>

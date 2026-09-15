@@ -1,0 +1,3 @@
+export const INACTIVITY_SWEEP="INSERT OR IGNORE INTO progression_events (user_id,source,label,xp_delta,shards,created_at) SELECT a.user_id,'idle:'||a.last_participated,'48-hour inactivity',-min(200,p.xp),0,? FROM player_activity a JOIN profiles p ON p.user_id=a.user_id WHERE julianday(?) - julianday(a.last_participated)>=2";
+export const LOGIN_INSERT="INSERT OR IGNORE INTO progression_events (user_id,source,label,xp_delta,shards,created_at) VALUES (?,?,'Daily sign-in bonus',30,0,?)";
+export const SPIN_INSERT="INSERT OR IGNORE INTO progression_events (user_id,source,label,xp_delta,shards,prize,created_at) VALUES (?,?,?,?,?,?,?)";

@@ -65,11 +65,14 @@ export async function POST(request:Request){try{
 
  let correct=false,testsPassed=0,testsTotal=0,detail:Record<string,unknown>={};
  if(row.kind==="bug"||row.kind==="audit"){
+  const fixes=JSON.parse(row.fixes) as unknown[];
+  if(!Number.isInteger(body.line)||!Number.isInteger(body.fixIndex)||Number(body.line)<1||Number(body.line)>row.code.split(NEWLINE).length||Number(body.fixIndex)<0||Number(body.fixIndex)>=fixes.length)return Response.json({error:"Choose a valid line and repair before submitting."},{status:400});
   const verdict=checkBugAnswer(row,Number(body.line),Number(body.fixIndex));
   correct=verdict.correct;testsTotal=1;testsPassed=correct?1:0;
   detail={lineCorrect:verdict.lineCorrect,fixCorrect:verdict.fixCorrect,buggyLine:verdict.buggyLine};
  }else{
   testsTotal=taskTestCount(row);
+  if(!Number.isInteger(body.testsPassed)||Number(body.testsPassed)<0||Number(body.testsPassed)>testsTotal)return Response.json({error:"Submit a valid test result."},{status:400});
   testsPassed=Math.min(testsTotal,Math.max(0,Math.floor(Number(body.testsPassed)||0)));
   correct=testsTotal>0&&testsPassed===testsTotal;
  }
@@ -78,7 +81,8 @@ export async function POST(request:Request){try{
  if(!player)return Response.json({correct,testsPassed,testsTotal,...detail,explanation:row.explanation,solution,xp:0,guest:true});
 
  const now=new Date().toISOString();
- await player.db.insert(codeAttempts).values({id:crypto.randomUUID(),userId:player.identity.userId,taskId:row.id,
+ const attemptId=crypto.randomUUID();
+ await player.db.insert(codeAttempts).values({id:attemptId,userId:player.identity.userId,taskId:row.id,
   source,passed:correct,testsPassed,testsTotal,durationMs,createdAt:now});
  let xp=0;
  if(correct&&source!=="duel"){
@@ -87,7 +91,8 @@ export async function POST(request:Request){try{
   // The ledger insert only affects a row the first time this task is solved.
   xp=Number(results[0]?.meta?.changes||0)>0?row.xp:0;
  }
- return Response.json({correct,testsPassed,testsTotal,...detail,explanation:row.explanation,solution,xp});
+ const penalty=await (await getStore()).prepare("SELECT xp_delta FROM progression_events WHERE user_id=? AND label=?").bind(player.identity.userId,`Failed challenge · ${attemptId}`).first<{xp_delta:number}>();
+ return Response.json({correct,testsPassed,testsTotal,...detail,explanation:row.explanation,solution,xp,xpLost:penalty?-penalty.xp_delta:0});
 }catch{return Response.json({error:"Could not grade this attempt. Please retry."},{status:500})}}
 
 export const dynamic="force-dynamic";

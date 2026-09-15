@@ -2,6 +2,8 @@ import Avatar from "./components/Avatar";
 import {getPlayer} from "./auth";
 import {NPCS} from "../lib/npcs";
 import h from "./home.module.css";
+import castle from "./castle-hero.module.css";
+import CastleDuel from "./components/CastleDuel";
 
 export const dynamic="force-dynamic";
 
@@ -28,10 +30,10 @@ function Icon({name}:{name:IconName}){
 const NAV=[["#modes","Modes"],["#fields","Fields"],["#audit","Code audits"],["#rivals","Rivals"],["#how","How it works"]] as const;
 
 const CHIPS=[
- {icon:"bolt" as IconName,label:"Server-graded answers"},
- {icon:"spark" as IconName,label:"Tests run in your browser"},
- {icon:"trend" as IconName,label:"XP, ranks and streaks"},
- {icon:"book" as IconName,label:"Six fields, one bank"},
+ {icon:"bolt" as IconName,label:"Server-graded answers",detail:"Find the bug. Learn the fix."},
+ {icon:"spark" as IconName,label:"Tests run in your browser",detail:"No setup. Just play."},
+ {icon:"trend" as IconName,label:"XP, ranks and streaks",detail:"Climb the leaderboards."},
+ {icon:"book" as IconName,label:"Six fields, one bank",detail:"From frontend to systems."},
 ];
 
 
@@ -113,7 +115,7 @@ const FAQ=[
  {q:"Can my code hang the page?",
   a:"No. Tests run inside a Web Worker with a timeout; an endless loop is terminated and reported as a failing test."},
  {q:"What do I earn?",
-  a:"XP for a first solve, more for winning duels, and daily milestones in the arcade. XP drives your level and your place on the leaderboard."},
+  a:"First-time challenge completions earn XP and Aether Shards. XP increases your level; shards unlock equipment in your laboratory. Duels and arcade milestones also award XP. Replaying a solved challenge does not pay its first-solve reward again."},
 ];
 
 export default async function Home(){
@@ -124,9 +126,10 @@ export default async function Home(){
   {value:String(bank.fields.length),label:"Fields to train"},
   {value:String(NPCS.length),label:"NPC rivals to beat"},
  ];
- return <main>
-  <header className="topbar" id="top">
-   <a className="brand" href="#top"><img src="/assets/logo.png" alt="Clash of Errors"/></a>
+ return <main className={h.home}>
+  <div className={castle.world}>
+  <header className={`topbar ${castle.navigation}`} id="top">
+   <a className="brand" href="#top"><img className={castle.logo} src="/assets/logo.png" alt="Clash of Errors"/></a>
    <nav aria-label="Primary">{NAV.map(([href,label])=><a key={href} href={href}>{label}</a>)}</nav>
    <div className="nav-actions">
     {player
@@ -137,22 +140,21 @@ export default async function Home(){
    </div>
   </header>
 
-  <section className="hero">
-   <div className="hero-copy">
-    <div className="eyebrow"><Icon name="code"/> SEASON 01 // ARENA ONLINE</div>
-    <h1><span>Turn Debugging Into</span><em>a Coding Arena.</em></h1>
-    <div className="rule"><i/><i/></div>
+  <section className={castle.hero}>
+   <div className={castle.copy}>
+    <div className={castle.season}>SEASON 01 // ARENA ONLINE</div>
+    <h1><span>Turn Debugging</span>Into <em>a Coding Arena.</em></h1>
+    <div className={castle.divider} aria-hidden="true">◇◈◇</div>
     <p>Find the bug in a snippet. Audit a 300-line module for the one line that lies. Write the function until every test goes green — then race a rival through the same task on one clock.</p>
-    <div className="hero-actions">
+    <div className={castle.actions}>
      <a className="btn cyan solid" href={player?"/challenges":"/register"}><Icon name="swords"/> {player?"Start a challenge":"Create your account"}</a>
      <a className="btn pink outline" href="/play"><Icon name="play"/> Play it as Game</a>
     </div>
-    <ul className="chips">{CHIPS.map(chip=><li key={chip.label}><Icon name={chip.icon}/>{chip.label}</li>)}</ul>
+    <ul className={castle.features}>{CHIPS.map(chip=><li key={chip.label}><Icon name={chip.icon}/><div><b>{chip.label}</b><small>{chip.detail}</small></div></li>)}</ul>
    </div>
-   <figure className="hero-art">
-    <img src="/assets/hero-battle.png" alt="A live 1v1 coding duel: two solutions side by side with a room code, the player roster, and a live leaderboard"/>
-   </figure>
+   <CastleDuel/>
   </section>
+  </div>
 
   <div className={h.stats}>
    {stats.map(stat=><div className={h.stat} key={stat.label}><b>{stat.value}</b><span>{stat.label}</span></div>)}
@@ -166,7 +168,7 @@ export default async function Home(){
    </div>
    <div className={h.modeGrid}>
     {MODES.map(mode=><article key={mode.title} className={h.modeCard} data-tone={mode.tone}>
-     <div className="hex"><Icon name={mode.icon}/></div>
+     <div className={h.modeArt}><div className={h.modeEmblem}><Icon name={mode.icon}/></div><span>{mode.tone==="cyan"?"THE ARCHIVES":mode.tone==="purple"?"THE DUELING GROUNDS":"THE HUNTING GROUNDS"}</span></div>
      <h3>{mode.title}</h3>
      <p>{mode.copy}</p>
      <ul className={h.modeList}>{mode.points.map(point=><li key={point}>{point}</li>)}</ul>
@@ -183,7 +185,7 @@ export default async function Home(){
    </div>
    <div className={h.fields}>
     {bank.fields.map(field=><div className={h.field} key={field.name}>
-     <b>{field.name}</b><span>{field.copy}</span><em>{field.count} challenge{field.count===1?"":"s"}</em>
+     <b>{field.name}</b><span>{field.copy}</span><em>{field.count} challenge{field.count===1?"":"s"}</em><a href="/challenges" aria-label={`Explore ${field.name} challenges`}>Explore challenges →</a>
     </div>)}
    </div>
   </section>
@@ -196,6 +198,7 @@ export default async function Home(){
    </div>
    <div className={h.sample}>
     <div className={h.sampleCode}>
+     <header><span>◇ THE REVIEW DESK</span><small>checkout.js · excerpt</small></header>
      {SAMPLE.map(row=><div key={row.n} data-flag={row.flag||undefined}><b>{row.n}</b><code>{row.code||" "}</code></div>)}
     </div>
     <div className={h.sampleCaption}>
@@ -211,23 +214,29 @@ export default async function Home(){
    <div className={h.sectionHead}>
     <span className="kicker">Rivals</span>
     <h2>Pick who you race.</h2>
-    <p>Each rival solves at its own pace and reveals its solution line by line as its tests pass. Their whole run is fixed when the room opens — you are racing a schedule, not a script that reacts to you.</p>
+    <p>Start with a rookie or test yourself against a legend. Each NPC has its own pace, and its solution unfolds as tests pass. Choose your opponent in the battle roster.</p>
    </div>
    <div className={h.rivals}>
-    {NPCS.map(npc=><div className={h.rival} key={npc.slug}>
-     <Avatar hue={npc.hue} size={62} label={npc.name}/>
+    {NPCS.map(npc=><a href="/battles" className={h.rival} key={npc.slug} aria-label={`Meet ${npc.name} in the battle roster`}>
+     <div className={h.rivalPortrait}><Avatar hue={npc.hue} size={90} label={npc.name}/></div>
      <b>{npc.name}</b>
      <span>Lv {npc.level} · {npc.tier}</span>
      <em style={{color:npc.accent}}>{npc.rating}</em>
-    </div>)}
+     <small>Meet your rival →</small>
+    </a>)}
    </div>
+  </section>
+
+  <section className={`${h.section} ${h.sanctuary}`}>
+   <div className={h.sanctuaryArt} aria-hidden="true"><span>♜</span><div>THE AETHER KEEP</div><small>Your discoveries. Your domain.</small></div>
+   <div className={h.sanctuaryCopy}><span className="kicker">Beyond the battlefield</span><h2>Every victory builds<br/>your kingdom.</h2><p>Choose your character and make the laboratory your own. First-time challenge completions earn Aether Shards to unlock your reactor, runic archive, storm beacon, and sovereign crest.</p><div className={h.rewardPath}><span>◇ Solve challenges</span><span>◈ Earn shards</span><span>♜ Build your keep</span></div><a className="btn cyan solid" href="/laboratory">Enter your laboratory →</a><a className={h.teamLink} href="/teams">Or gather your squad →</a></div>
   </section>
 
   <section className={h.section} id="how">
    <div className={h.sectionHead}>
     <span className="kicker">How it works</span>
     <h2>From account to first duel.</h2>
-    <p>No email verification, no third-party sign-in, no waiting. Four steps from landing here to racing a rival.</p>
+    <p>Create your account, find your field, and take your first challenge into the arena.</p>
    </div>
    <div className={h.steps}>
     {STEPS.map(step=><div className={h.step} key={step.title}><b>{step.title}</b><span>{step.copy}</span></div>)}
@@ -240,7 +249,7 @@ export default async function Home(){
     <h2>How the grading works.</h2>
    </div>
    <div className={h.faq}>
-    {FAQ.map(item=><article key={item.q}><b>{item.q}</b><p>{item.a}</p></article>)}
+    {FAQ.map(item=><details key={item.q}><summary>{item.q}</summary><p>{item.a}</p></details>)}
    </div>
   </section>
 

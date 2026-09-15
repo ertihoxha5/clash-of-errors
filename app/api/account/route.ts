@@ -3,6 +3,7 @@ import {accountEmail,clearedSessionCookie,endSession,getPlayer,hashPassword,newS
  saltBytes,sameDigest,sessionCookie,startSession,validateRegistration} from "../../auth";
 import {getDb} from "../../../db";
 import {accounts,profiles,users} from "../../../db/schema";
+import {dailyLogin} from "../../../lib/progression";
 
 const clean=(value:unknown,max:number)=>typeof value==="string"?value.trim().replace(/[<>]/g,"").slice(0,max):"";
 
@@ -33,7 +34,8 @@ export async function POST(request:Request){try{
   await db.insert(accounts).values({userId,username,firstName,lastName,passwordHash:digest,passwordSalt:salt,createdAt:now,updatedAt:now});
   await db.insert(profiles).values({userId,displayName,avatar:(firstName[0]+lastName[0]).toUpperCase(),updatedAt:now}).onConflictDoNothing();
   const token=await startSession(userId);
-  return Response.json({ok:true,username,displayName},{status:201,headers:{"set-cookie":sessionCookie(token)}});
+  const bonusXp=await dailyLogin(userId);
+  return Response.json({ok:true,username,displayName,bonusXp},{status:201,headers:{"set-cookie":sessionCookie(token)}});
  }
 
  if(action==="login"){
@@ -44,7 +46,8 @@ export async function POST(request:Request){try{
   if(!account||!sameDigest(digest,account.passwordHash))
    return Response.json({error:"That username and password do not match."},{status:401});
   const token=await startSession(account.userId);
-  return Response.json({ok:true,username},{headers:{"set-cookie":sessionCookie(token)}});
+  const bonusXp=await dailyLogin(account.userId);
+  return Response.json({ok:true,username,bonusXp},{headers:{"set-cookie":sessionCookie(token)}});
  }
 
  return Response.json({error:"Unknown account action."},{status:400});

@@ -27,6 +27,7 @@ export default function AccountForm({mode,returnTo}:{mode:"login"|"register";ret
  }
 
  return <form className={a.form} onSubmit={event=>{event.preventDefault();void submit()}}>
+  <p className={a.note}>Daily sign-in bonus: <strong>+30 XP</strong>, once per UTC day.</p>
   {mode==="register"&&<div className={a.pair}>
    <label className={a.field}>
     <span>First name</span>

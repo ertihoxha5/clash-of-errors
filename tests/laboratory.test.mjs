@@ -1,0 +1,23 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {readFileSync} from 'node:fs';
+import {PURCHASE_SQL,EARNED_SHARDS,SPENT_SHARDS} from '../lib/laboratory.ts';
+test('laboratory purchases preserve balances, ownership and one-time unlocks',()=>{
+ const db=new DatabaseSync(':memory:');
+ db.exec("PRAGMA foreign_keys=ON; CREATE TABLE users(id TEXT PRIMARY KEY); INSERT INTO users VALUES ('a'),('b'); CREATE TABLE platform_rewards(user_id TEXT,source TEXT,xp INTEGER,UNIQUE(user_id,source));");
+ db.exec(readFileSync(new URL('../drizzle/0015_lovely_zzzax.sql',import.meta.url),'utf8'));
+ db.exec(readFileSync(new URL('../drizzle/0016_fluffy_moira_mactaggert.sql',import.meta.url),'utf8'));
+ db.exec("INSERT INTO platform_rewards VALUES ('a','task:1',100),('a','task:2',100),('a','game:1',1000),('b','task:1',100);");
+ const balance=id=>db.prepare(`SELECT ${EARNED_SHARDS}-${SPENT_SHARDS} balance`).get(id,id).balance;
+ const buy=(id,item,cost)=>Number(db.prepare(PURCHASE_SQL).run(id,item,cost,'2026-09-14',id,id,cost).changes);
+ assert.equal(balance('a'),40,'arcade XP is not challenge currency');
+ assert.equal(buy('a','reactor',20),1);
+ assert.equal(buy('a','reactor',20),0,'duplicate cannot charge twice');
+ assert.equal(buy('a','archive',40),0,'insufficient funds cannot overspend');
+ assert.equal(balance('a'),20);
+ assert.equal(balance('b'),20,'wallets are isolated');
+ db.exec("INSERT OR IGNORE INTO platform_rewards VALUES ('a','task:1',100)");
+ assert.equal(balance('a'),20,'replayed reward does not replenish wallet');
+ db.close();
+});

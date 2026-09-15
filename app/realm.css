@@ -1,0 +1,36 @@
+/* Shared realm theme: every mode retains its layout and functional colours. */
+body{background-color:var(--bg);background-image:radial-gradient(ellipse at 75% 0,#51435b30,transparent 52%),radial-gradient(ellipse at 0 50%,#17303930,transparent 55%);background-attachment:fixed}
+::selection{background:#826c48;color:#fff}
+h1{font-family:var(--font-realm);font-weight:500;letter-spacing:-.025em}
+h2,h3{line-height:1.2}
+.topbar{height:auto;min-height:78px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px;background:#0b1019f2;border-bottom:1px solid var(--gold-line);box-shadow:0 8px 30px #0003}
+.topbar .brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar nav{gap:20px}.topbar nav a,.topbar nav button{font-size:.82rem;white-space:nowrap}
+.brand.compact span{color:#e0c99f;letter-spacing:.12em}
+.kicker,.eyebrow{color:var(--gold);font-size:.65rem;letter-spacing:.17em}
+.kicker:after{background:linear-gradient(90deg,var(--gold),transparent);height:1px;width:80px}
+.btn{clip-path:none;border-radius:4px;letter-spacing:.055em;min-height:44px;font-size:.76rem}
+.btn.cyan.solid{background:linear-gradient(135deg,#e0c897,#b59861);color:#19170f;border:1px solid #ead8af;box-shadow:0 3px 14px #0004,inset 0 1px #fff4}
+.btn.pink.solid{background:linear-gradient(135deg,#9981ad,#725a87);color:#fff;border:1px solid #b19ac4;box-shadow:none}
+.btn.cyan.outline,.btn.pink.outline{background:#121b26;color:#d9cfba;border-color:#74664e;box-shadow:none}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+input,select,textarea{border-radius:4px;accent-color:var(--gold)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+button:disabled{cursor:not-allowed;opacity:.5}
+.hero{padding-top:58px;padding-bottom:52px}
+.hero h1{font-size:clamp(2.8rem,5.2vw,5rem);line-height:1.1}
+.hero h1 span{color:#f0e8d8}.hero h1 em{background:linear-gradient(110deg,#e4d2a6,#a8d5d7);background-clip:text;-webkit-background-clip:text}
+.hero-art{border:1px solid #786647;padding:7px;background:#131b27;box-shadow:0 24px 70px #0007;position:relative}
+.hero-art img{filter:saturate(.7)}
+.rule i{background:var(--gold);box-shadow:none}.chips{color:#bac0c9}
+.panel,.join-panel,.create-panel,.profile-card,.profile-panel,.activity-panel,.daily-panel,.practice-card,.battle-panel{background:var(--surface);border-color:var(--line);border-radius:6px}
+.account-nav{border-bottom-color:var(--gold-line);background:#0c121c}
+.profile-card,.account-panel,.auth-panel{clip-path:none;border-radius:6px;border:1px solid var(--line);background:var(--surface)}
+.profile-avatar{border-color:var(--gold);color:var(--gold);background:#272733;box-shadow:none}
+.profile-grid{padding-top:30px;padding-bottom:40px}
+.account-panel h2,.profile-card h2{font-family:var(--font-realm);font-weight:500}
+table{font-variant-numeric:tabular-nums}thead{background:#ffffff04}tbody tr:hover{background:#d3b87e08}
+pre,code,textarea{font-family:var(--font-mono),ui-monospace,monospace}
+@media(max-width:1000px){.topbar nav{order:3;flex-basis:100%;overflow:auto;flex-wrap:nowrap;justify-content:flex-start;padding:6px 0}.topbar{gap:12px;position:relative}.topbar>div:last-child{margin-left:auto}}
+@media(max-width:600px){.hero{padding-top:32px}.topbar .brand.compact span{font-size:.66rem}.btn{padding:0 14px}.hero-art{margin:0}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}.btn:hover{transform:none}}

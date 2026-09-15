@@ -2,6 +2,7 @@
 import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
+import {INACTIVITY_SWEEP} from "../lib/progression-sql";
 
 const MISSING_DB =
   "Cloudflare D1 binding `DB` is unavailable. Set the `d1` field in .openai/hosting.json to `DB` or let your control plane inject the real binding values before using the database.";
@@ -48,6 +49,10 @@ export async function getDb() {
   const runtimeEnv = env as typeof env & { DB?: D1Database };
   if (!runtimeEnv.DB) throw new Error(MISSING_DB);
   if (import.meta.env.DEV) await ensureLocalSchema(runtimeEnv.DB);
+  // Settle overdue periods before any profile, leaderboard or reward query.
+  // The unique event key makes concurrent requests safe and prevents repeats.
+  const now=new Date().toISOString();
+  await runtimeEnv.DB.prepare(INACTIVITY_SWEEP).bind(now,now).run();
   return drizzle(runtimeEnv.DB, { schema });
 }
 

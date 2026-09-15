@@ -6,7 +6,7 @@ export default function Avatar({hue,size=48,label,dim=false}:{hue:number;size?:n
  const hair=`hsl(${hue} 85% ${dim?52:62}%)`;
  const suit=`hsl(${(hue+18)%360} 70% ${dim?26:34}%)`;
  const glow=`hsl(${hue} 95% 62%)`;
- return <svg viewBox="0 0 64 64" width={size} height={size} role="img" aria-label={label?`${label} portrait`:"Player portrait"} style={{flex:"none"}}>
+ return <svg viewBox="0 0 64 64" width={size} height={size} role="img" aria-label={label?`${label} portrait`:"Player portrait"} style={{flex:"none",width:size,height:size}}>
   <defs>
    <linearGradient id={`bg-${hue}`} x1="0" y1="0" x2="0" y2="1">
     <stop offset="0" stopColor={`hsl(${hue} 60% 22%)`}/>

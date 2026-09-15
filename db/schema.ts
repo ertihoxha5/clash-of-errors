@@ -208,3 +208,23 @@ export const sessions=sqliteTable("sessions",{
  createdAt:text("created_at").notNull(),
  expiresAt:text("expires_at").notNull(),
 },t=>[index("idx_sessions_user").on(t.userId),index("idx_sessions_expiry").on(t.expiresAt)]);
+
+export const laboratories=sqliteTable("laboratories",{
+ userId:text("user_id").primaryKey().references(()=>users.id,{onDelete:"cascade"}),
+ character:text("character").notNull().default("nullknight"),
+});
+export const labUnlocks=sqliteTable("lab_unlocks",{
+ userId:text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}),
+ item:text("item").notNull(),cost:integer("cost").notNull(),createdAt:text("created_at").notNull(),
+},t=>[uniqueIndex("idx_lab_unlock_user_item").on(t.userId,t.item)]);
+
+export const playerActivity=sqliteTable("player_activity",{
+ userId:text("user_id").primaryKey().references(()=>users.id,{onDelete:"cascade"}),
+ lastParticipated:text("last_participated").notNull(),
+});
+export const progressionEvents=sqliteTable("progression_events",{
+ userId:text("user_id").notNull().references(()=>users.id,{onDelete:"cascade"}),
+ source:text("source").notNull(),label:text("label").notNull(),
+ xpDelta:integer("xp_delta").notNull().default(0),shards:integer("shards").notNull().default(0),
+ prize:integer("prize"),createdAt:text("created_at").notNull(),
+},t=>[uniqueIndex("idx_progression_user_source").on(t.userId,t.source),index("idx_progression_user_created").on(t.userId,t.createdAt)]);
