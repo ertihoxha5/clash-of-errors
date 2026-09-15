@@ -1,0 +1,43 @@
+.host { max-width: 1480px; margin: 0 auto; padding: 32px max(24px, 4vw) 40px; }
+.heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.title { font-size: clamp(2rem, 4vw, 3.5rem); margin: 14px 0 0; line-height: 1.1; }
+.phase { color: var(--muted); font: 400 .8rem var(--font-mono), monospace; letter-spacing: .05em; padding-bottom: 5px; }
+.phase span { color: var(--gold); padding: 0 8px; }
+.intro { color: var(--muted); font-size: 1rem; line-height: 1.6; margin: 15px 0 23px; }
+.viewport { position: relative; isolation: isolate; height: min(68vh, 800px); min-height: 460px; background: #080e19; border: 1px solid var(--line); overflow: hidden; }
+.viewport:fullscreen { height: 100dvh; width: 100vw; min-height: 0; border: 0; }
+.canvasMount { position: absolute; inset: 0; }
+.canvasMount canvas:focus-visible { outline: 2px solid var(--cyan); outline-offset: -3px; }
+.overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 48px 24px 80px; text-align: center; background: radial-gradient(ellipse at 50% 15%, #1a3040 0%, #080e19 72%); overflow-y: auto; }
+.overlay h2 { font-size: clamp(1.6rem, 3vw, 2.5rem); line-height: 1.15; }
+.overlay p { max-width: 540px; margin: 0; color: var(--muted); font-size: 1rem; line-height: 1.65; }
+.overlay progress { display: block; width: min(280px, 60vw); height: 5px; accent-color: var(--cyan); margin: 26px auto; }
+.overlay [role="status"] h2 { margin-top: 18px; }
+.index { font: 400 .8rem var(--font-mono), monospace; color: var(--gold); letter-spacing: .16em; }
+.requirement { color: var(--dim); font: .75rem var(--font-mono), monospace; letter-spacing: .07em; }
+.paused { background: #080e19db; backdrop-filter: blur(5px); }
+.telemetry { position: absolute; inset: 0 0 auto; display: flex; justify-content: space-between; padding: 20px 24px 35px; gap: 16px; font: .75rem var(--font-mono), monospace; letter-spacing: .1em; color: var(--cyan); background: linear-gradient(#080e19bd, transparent); pointer-events: none; }
+.telemetry span:last-child { color: var(--gold); }
+.viewportControls { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 20px; border-top: 1px solid #35404d80; background: #080e19ed; }
+.cameraLabel { margin-right: auto; font: .75rem var(--font-mono), monospace; color: var(--muted); letter-spacing: .06em; }
+.viewportControls button { min-height: 40px; border: 1px solid var(--line); padding: 8px 14px; font-size: .875rem; color: var(--text); background: #14202d; }
+.viewportControls button:hover { border-color: var(--cyan); }
+.footer { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-top: 16px; }
+.footer p, .notice { color: var(--muted); font-size: .875rem; line-height: 1.6; margin: 0; }
+.footer a { flex-shrink: 0; color: var(--cyan); font-size: .875rem; padding: 10px 0; }
+.notice { margin-top: 16px; }
+@media (max-width: 700px) {
+  .host { padding: 24px 16px; }
+  .heading { align-items: flex-start; flex-direction: column; gap: 14px; }
+  .viewport { min-height: 500px; height: 65vh; }
+  .overlay { padding-bottom: 115px; gap: 18px; }
+  .telemetry { padding: 16px; font-size: .7rem; }
+  .telemetry span:last-child { display: none; }
+  .cameraLabel { width: 100%; }
+  .viewportControls { padding: 10px 12px; gap: 7px; }
+  .viewportControls button { padding: 8px 10px; }
+  .footer { flex-direction: column; gap: 4px; }
+}
+@media (max-height: 500px) and (min-width: 701px) {
+  .viewport:fullscreen .overlay { padding: 18px 24px 74px; gap: 12px; }
+}
